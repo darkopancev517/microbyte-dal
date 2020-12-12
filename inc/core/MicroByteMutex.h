@@ -14,8 +14,6 @@ class MicroByteMutex
 {
     CircList queue;
 
-    MicroByteScheduler *scheduler;
-
     int setLock(int blocking);
     template <typename Type> inline Type &get() const;
 

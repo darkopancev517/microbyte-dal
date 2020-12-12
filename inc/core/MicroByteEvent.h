@@ -21,7 +21,6 @@ class MicroByteEvent
 class MicroByteEventQueue
 {
     CircList queue;
-    MicroByteScheduler *scheduler;
 
     public:
 

@@ -9,8 +9,6 @@
 
 class MicroByteMsg
 {
-    MicroByteScheduler *scheduler;
-
     int send(MicroBytePid targetPid, int blocking, unsigned state);
     int receive(int blocking);
 

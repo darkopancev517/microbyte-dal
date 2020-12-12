@@ -4,19 +4,18 @@
 MicroByteMutex::MicroByteMutex()
     : queue()
 {
-    this->scheduler = &MicroByteScheduler::get();
 }
 
 MicroByteMutex::MicroByteMutex(CircList *locked)
     : queue()
 {
     this->queue.next = locked;
-    this->scheduler = &MicroByteScheduler::get();
 }
 
 int MicroByteMutex::setLock(int blocking)
 {
     unsigned state = microbyte_disable_irq();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     if (queue.next == NULL)
     {
         queue.next = MICROBYTE_MUTEX_LOCKED;
@@ -63,6 +62,7 @@ MicroBytePid MicroByteMutex::peek()
 void MicroByteMutex::unlock()
 {
     unsigned state = microbyte_disable_irq();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     if (queue.next == NULL)
     {
         microbyte_restore_irq(state);
@@ -89,6 +89,7 @@ void MicroByteMutex::unlock()
 void MicroByteMutex::unlockAndSleep()
 {
     unsigned state = microbyte_disable_irq();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     if (queue.next)
     {
         if (queue.next == MICROBYTE_MUTEX_LOCKED)

@@ -7,11 +7,11 @@ MicroByteMsg::MicroByteMsg()
 {
     this->content.ptr = NULL;
     this->content.value = 0;
-    this->scheduler = &MicroByteScheduler::get();
 }
 
 int MicroByteMsg::send(MicroBytePid targetPid, int blocking, unsigned state)
 {
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(targetPid);
     senderPid = scheduler->activePid();
     if (targetThread == NULL || !targetThread->hasMsgQueue())
@@ -65,7 +65,10 @@ int MicroByteMsg::send(MicroBytePid targetPid, int blocking, unsigned state)
 int MicroByteMsg::receive(int blocking)
 {
     unsigned state = microbyte_disable_irq();
+
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *curThread = scheduler->activeThread();
+
     if (curThread == NULL || !curThread->hasMsgQueue())
     {
         microbyte_restore_irq(state);
@@ -144,6 +147,8 @@ int MicroByteMsg::receive(int blocking)
 
 int MicroByteMsg::send(MicroBytePid targetPid)
 {
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
+
     if (microbyte_in_isr())
         return sendInIsr(targetPid);
 
@@ -155,6 +160,8 @@ int MicroByteMsg::send(MicroBytePid targetPid)
 
 int MicroByteMsg::trySend(MicroBytePid targetPid)
 {
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
+
     if (microbyte_in_isr())
         return sendInIsr(targetPid);
 
@@ -167,6 +174,7 @@ int MicroByteMsg::trySend(MicroBytePid targetPid)
 int MicroByteMsg::sendToSelf(void)
 {
     unsigned state = microbyte_disable_irq();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *curThread = scheduler->activeThread();
     if (curThread == NULL || !curThread->hasMsgQueue())
     {
@@ -181,6 +189,7 @@ int MicroByteMsg::sendToSelf(void)
 
 int MicroByteMsg::sendInIsr(MicroBytePid targetPid)
 {
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(targetPid);
 
     if (targetThread == NULL || !targetThread->hasMsgQueue())
@@ -220,6 +229,8 @@ int MicroByteMsg::tryReceive()
 int MicroByteMsg::sendReceive(MicroByteMsg *reply, MicroBytePid targetPid)
 {
     unsigned state = microbyte_disable_irq();
+
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *curThread = scheduler->activeThread();
 
     if (curThread->pid == targetPid || !curThread->hasMsgQueue())
@@ -234,6 +245,7 @@ int MicroByteMsg::sendReceive(MicroByteMsg *reply, MicroBytePid targetPid)
 int MicroByteMsg::reply(MicroByteMsg *reply)
 {
     unsigned state = microbyte_disable_irq();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(senderPid);
     if (targetThread == NULL ||
         !targetThread->hasMsgQueue() ||
@@ -252,6 +264,7 @@ int MicroByteMsg::reply(MicroByteMsg *reply)
 
 int MicroByteMsg::replyInIsr(MicroByteMsg *reply)
 {
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(senderPid);
     if (targetThread == NULL ||
         !targetThread->hasMsgQueue() ||

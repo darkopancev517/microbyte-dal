@@ -9,13 +9,14 @@ MicroByteEvent::MicroByteEvent()
 MicroByteEventQueue::MicroByteEventQueue()
 {
     this->queue.next = NULL;
-    this->scheduler = &MicroByteScheduler::get();
 }
 
 void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
 {
     if (event == NULL || thread == NULL)
         return;
+
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
 
     unsigned state = microbyte_disable_irq();
 
@@ -50,6 +51,7 @@ MicroByteEvent *MicroByteEventQueue::get()
 MicroByteEvent *MicroByteEventQueue::wait()
 {
     MicroByteEvent *result = NULL;
+    MicroByteScheduler *scheduler = &MicroByteScheduler::get();
 #ifdef UNITTEST
     unsigned state = microbyte_disable_irq();
     result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
