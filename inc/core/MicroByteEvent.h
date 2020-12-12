@@ -6,6 +6,7 @@
 
 #include "MicroByteConfig.h"
 #include "MicroByteCpu.h"
+#include "MicroByteThread.h"
 
 #define MICROBYTE_EVENT_THREAD_FLAG (0x1)
 

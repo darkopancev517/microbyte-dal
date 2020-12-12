@@ -2,9 +2,9 @@
 #define MICROBYTE_CPU_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "MicroByteConfig.h"
-#include "MicroByteThread.h"
 
 class MicroByteCpu
 {
@@ -58,9 +58,9 @@ class MicroByteCpu
         return NULL;
     }
 
-    virtual char *stackInit(MicroByteThreadHandler func, void *arg, void *stack, int size)
+    virtual char *stackInit(void *(*handler)(void *), void *arg, void *stack, int size)
     {
-        (void)func;
+        (void)handler;
         (void)arg;
         (void)stack;
         (void)size;

@@ -36,7 +36,7 @@ class MicroByteCpuTest : public MicroByteCpu
 
     void *getMsp(void);
 
-    char *stackInit(MicroByteThreadHandler func, void *arg, void *stack, int size);
+    char *stackInit(void *(*handler)(void*), void *arg, void *stack, int size);
 
     // Test helper functions
 

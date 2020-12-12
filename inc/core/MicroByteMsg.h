@@ -6,6 +6,7 @@
 
 #include "MicroByteConfig.h"
 #include "MicroByteCpu.h"
+#include "MicroByteThread.h"
 
 class MicroByteMsg
 {
