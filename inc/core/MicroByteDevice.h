@@ -2,7 +2,10 @@
 #define MICROBYTE_DEVICE_H
 
 #include "MicroByteConfig.h"
-#include "MicroByteThread.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 unsigned microbyte_disable_irq();
 
@@ -25,5 +28,9 @@ void microbyte_sleep_until_event();
 void *microbyte_get_msp();
 
 char *microbyte_stack_init(void *(*handler)(void *), void *arg, void *stack, int size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

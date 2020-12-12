@@ -1,4 +1,4 @@
-#include "MicroByteCpu.h"
+#include "MicroByteDevice.h"
 #include "MicroByteThread.h"
 #include "MicroByteMsg.h"
 #include "New.h"
@@ -34,7 +34,6 @@ MicroByteScheduler::MicroByteScheduler()
     {
         this->runQueue[prio].next = NULL;
     }
-    this->cpu = uByteCpu;
 }
 
 MicroByteThread::MicroByteThread()
@@ -53,7 +52,6 @@ MicroByteThread::MicroByteThread()
     , msgQueue()
     , msgArray(NULL)
 {
-    this->cpu = uByteCpu;
 }
 
 MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int flags,
@@ -102,7 +100,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
         *(uintptr_t *)stack = reinterpret_cast<uintptr_t>(stack);
     }
 
-    unsigned state = thread->cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
 
     MicroBytePid pid = MICROBYTE_THREAD_PID_UNDEF;
 
@@ -119,14 +117,14 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
 
     if (pid == MICROBYTE_THREAD_PID_UNDEF)
     {
-        thread->cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
         return NULL;
     }
 
     scheduler.addThread(thread, pid);
 
     thread->pid = pid;
-    thread->stackPointer = thread->cpu->stackInit(func, arg, stack, size);
+    thread->stackPointer = microbyte_stack_init(func, arg, stack, size);
     thread->stackStart = stack;
     thread->stackSize = totalStackSize;
     thread->name = name;
@@ -145,13 +143,13 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
 
         if (!(flags & MICROBYTE_THREAD_FLAGS_WOUT_YIELD))
         {
-            thread->cpu->restoreIrq(state);
+            microbyte_restore_irq(state);
             scheduler.contextSwitch(prio);
             return thread;
         }
     }
 
-    thread->cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
 
     return thread;
 }
@@ -190,13 +188,13 @@ void MicroByteScheduler::contextSwitch(uint8_t priority)
     // The lowest priority number is the highest priority thread
     if (!isInRunQueue || (curPriority > priority))
     {
-        if (cpu->inIsr())
+        if (microbyte_in_isr())
         {
             contextSwitchRequest = 1;
         }
         else
         {
-            cpu->triggerContextSwitch();
+            microbyte_trigger_context_switch();
         }
     }
 }
@@ -234,10 +232,10 @@ MicroByteThread *MicroByteScheduler::nextThreadFromRunQueue()
 
 uint16_t MicroByteScheduler::clearThreadFlagsAtomic(MicroByteThread *thread, uint16_t mask)
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     mask &= thread->flags;
     thread->flags &= ~mask;
-    cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
     return mask;
 }
 
@@ -245,74 +243,74 @@ void MicroByteScheduler::waitThreadFlags(uint16_t mask, MicroByteThread *thread,
 {
     thread->waitFlags = mask;
     setThreadStatus(thread, newStatus);
-    cpu->restoreIrq(state);
-    cpu->triggerContextSwitch();
+    microbyte_restore_irq(state);
+    microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::waitAnyThreadFlagsBlocked(uint16_t mask)
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     if (!(currentActiveThread->flags & mask))
     {
         waitThreadFlags(mask, currentActiveThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY, state);
     }
     else
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
     }
 }
 
 void MicroByteScheduler::sleep()
 {
-    if (cpu->inIsr())
+    if (microbyte_in_isr())
         return;
 
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     setThreadStatus(currentActiveThread, MICROBYTE_THREAD_STATUS_SLEEPING);
-    cpu->restoreIrq(state);
-    cpu->triggerContextSwitch();
+    microbyte_restore_irq(state);
+    microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::yield()
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
 
     if (currentActiveThread->status >= MICROBYTE_THREAD_STATUS_RUNNING)
         runQueue[currentActiveThread->priority].leftPopRightPush();
 
-    cpu->restoreIrq(state);
-    cpu->triggerContextSwitch();
+    microbyte_restore_irq(state);
+    microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::exit()
 {
-    (void)cpu->disableIrq();
+    (void)microbyte_disable_irq();
     threadsContainer[currentActivePid] = NULL;
     numOfThreadsInContainer -= 1;
     setThreadStatus(currentActiveThread, MICROBYTE_THREAD_STATUS_STOPPED);
     currentActiveThread = NULL;
-    cpu->triggerContextSwitch();
+    microbyte_trigger_context_switch();
 }
 
 int MicroByteScheduler::wakeUpThread(MicroBytePid pid)
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     MicroByteThread *threadToWake = threadFromContainer(pid);
     if (!threadToWake)
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
         return -1; // MicroByteThread wasn't in container
     }
     else if (threadToWake->status == MICROBYTE_THREAD_STATUS_SLEEPING)
     {
         setThreadStatus(threadToWake, MICROBYTE_THREAD_STATUS_PENDING);
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
         contextSwitch(threadToWake->priority);
         return 1;
     }
     else
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
         return 0; // MicroByteThread wasn't sleep
     }
 }
@@ -339,19 +337,19 @@ void MicroByteScheduler::run()
 
 void MicroByteScheduler::setThreadFlags(MicroByteThread *thread, uint16_t mask)
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     thread->flags |= mask;
 
     if (wakeThreadFlags(thread))
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
 
-        if (!cpu->inIsr())
-            cpu->triggerContextSwitch();
+        if (!microbyte_in_isr())
+            microbyte_trigger_context_switch();
     }
     else
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
     }
 }
 
@@ -368,14 +366,14 @@ uint16_t MicroByteScheduler::waitAnyThreadFlags(uint16_t mask)
 
 uint16_t MicroByteScheduler::waitAllThreadFlags(uint16_t mask)
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     if (!((currentActiveThread->flags & mask) == mask))
     {
         waitThreadFlags(mask, currentActiveThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ALL, state);
     }
     else
     {
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
     }
     return clearThreadFlagsAtomic(currentActiveThread, mask);
 }

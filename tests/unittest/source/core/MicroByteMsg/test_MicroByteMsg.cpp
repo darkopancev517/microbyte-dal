@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 
+#include "MicroByteUnitTest.h"
+
 #include "MicroByteMsg.h"
 #include "MicroByteThread.h"
-#include "MicroByteUnitTest.h"
 #include "Utils.h"
 
 class TestMicroByteMsg : public testing::Test
@@ -20,8 +21,6 @@ class TestMicroByteMsg : public testing::Test
 
 TEST_F(TestMicroByteMsg, singleMsgTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
@@ -336,11 +335,11 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     msg3.type = 0x23;
     msg3.content.value = 0xbbbbbbbb;
 
-    cpuTest.setInIsr(1);
-    EXPECT_EQ(cpuTest.inIsr(), 1);
+    microbyte_set_in_isr(1);
+    EXPECT_EQ(microbyte_in_isr(), 1);
     EXPECT_EQ(msg3.send(thread1->getPid()), 1);
-    cpuTest.setInIsr(0);
-    EXPECT_EQ(cpuTest.inIsr(), 0);
+    microbyte_set_in_isr(0);
+    EXPECT_EQ(microbyte_in_isr(), 0);
 
     EXPECT_EQ(thread1->numOfMsgInQueue(), 1);
 
@@ -461,13 +460,13 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     msg6.type = 0xee;
     msg6.content.value = 0xccccdddd;
 
-    cpuTest.setInIsr(1);
-    EXPECT_EQ(cpuTest.inIsr(), 1);
+    microbyte_set_in_isr(1);
+    EXPECT_EQ(microbyte_in_isr(), 1);
 
     EXPECT_EQ(msg5.replyInIsr(&msg6), 1);
 
-    cpuTest.setInIsr(0);
-    EXPECT_EQ(cpuTest.inIsr(), 0);
+    microbyte_set_in_isr(0);
+    EXPECT_EQ(microbyte_in_isr(), 0);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
@@ -489,8 +488,6 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
 
 TEST_F(TestMicroByteMsg, multipleMsgTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);

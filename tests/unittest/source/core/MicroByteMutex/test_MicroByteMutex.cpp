@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 
+#include "MicroByteUnitTest.h"
+
 #include "MicroByteMutex.h"
 #include "MicroByteThread.h"
-#include "MicroByteUnitTest.h"
 
 class TestMicroByteMutex : public testing::Test
 {
@@ -19,8 +20,6 @@ class TestMicroByteMutex : public testing::Test
 
 TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
@@ -397,15 +396,15 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread2->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
 
-    cpuTest.setInIsr(1);
+    microbyte_set_in_isr(1);
 
-    EXPECT_EQ(cpuTest.inIsr(), 1);
+    EXPECT_EQ(microbyte_in_isr(), 1);
 
     mutex3.unlock();
 
-    cpuTest.setInIsr(0);
+    microbyte_set_in_isr(0);
 
-    EXPECT_EQ(cpuTest.inIsr(), 0);
+    EXPECT_EQ(microbyte_in_isr(), 0);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);

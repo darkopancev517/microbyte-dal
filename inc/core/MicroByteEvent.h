@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "MicroByteConfig.h"
-#include "MicroByteCpu.h"
 #include "MicroByteThread.h"
 
 #define MICROBYTE_EVENT_THREAD_FLAG (0x1)
@@ -22,7 +21,6 @@ class MicroByteEvent
 class MicroByteEventQueue
 {
     CircList queue;
-    MicroByteCpu *cpu;
     MicroByteScheduler *scheduler;
 
     public:

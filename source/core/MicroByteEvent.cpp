@@ -1,3 +1,4 @@
+#include "MicroByteDevice.h"
 #include "MicroByteEvent.h"
 
 MicroByteEvent::MicroByteEvent()
@@ -8,7 +9,6 @@ MicroByteEvent::MicroByteEvent()
 MicroByteEventQueue::MicroByteEventQueue()
 {
     this->queue.next = NULL;
-    this->cpu = uByteCpu;
     this->scheduler = &MicroByteScheduler::get();
 }
 
@@ -17,12 +17,12 @@ void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
     if (event == NULL || thread == NULL)
         return;
 
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
 
     if (!event->node.next)
         queue.rightPush(&event->node);
 
-    cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
     scheduler->setThreadFlags(thread, MICROBYTE_EVENT_THREAD_FLAG);
 }
 
@@ -31,17 +31,17 @@ void MicroByteEventQueue::cancel(MicroByteEvent *event)
     if (event == NULL)
         return;
 
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     queue.remove(&event->node);
     event->node.next = NULL;
-    cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
 }
 
 MicroByteEvent *MicroByteEventQueue::get()
 {
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     MicroByteEvent *result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-    cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
     if (result)
         result->node.next = NULL;
     return result;
@@ -51,17 +51,17 @@ MicroByteEvent *MicroByteEventQueue::wait()
 {
     MicroByteEvent *result = NULL;
 #ifdef UNITTEST
-    unsigned state = cpu->disableIrq();
+    unsigned state = microbyte_disable_irq();
     result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-    cpu->restoreIrq(state);
+    microbyte_restore_irq(state);
     if (result == NULL)
         scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
 #else
     do
     {
-        unsigned state = cpu->disableIrq();
+        unsigned state = microbyte_disable_irq();
         result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-        cpu->restoreIrq(state);
+        microbyte_restore_irq(state);
         if (result == NULL)
             scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
     } while (result == NULL);

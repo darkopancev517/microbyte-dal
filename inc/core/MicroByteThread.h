@@ -45,7 +45,6 @@ typedef enum
     MICROBYTE_THREAD_STATUS_NUMOF,
 } MicroByteThreadStatus;
 
-class MicroByteCpu;
 class MicroByteScheduler;
 class MicroByteMsg;
 
@@ -65,7 +64,6 @@ class MicroByteThread
     char *stackStart;
     const char *name;
     int stackSize;
-    MicroByteCpu *cpu;
 
     uint16_t flags;
     uint16_t waitFlags;
@@ -114,7 +112,6 @@ class MicroByteScheduler
     uint32_t runQueueBitCache;
     MicroByteThread *threadsContainer[MICROBYTE_THREAD_PID_LAST + 1];
     CircList runQueue[MICROBYTE_CONFIG_THREAD_PRIO_LEVELS];
-    MicroByteCpu *cpu;
 
     static unsigned bitArithmLsb(unsigned v);
     MicroByteThread *nextThreadFromRunQueue();

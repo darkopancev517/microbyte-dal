@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 
+#include "MicroByteUnitTest.h"
+
 #include "MicroByteEvent.h"
 #include "MicroByteThread.h"
-#include "MicroByteUnitTest.h"
 #include "Utils.h"
 
 class TestMicroByteEvent : public testing::Test
@@ -32,8 +33,6 @@ class CustomEvent
 
 TEST_F(TestMicroByteEvent, eventTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);

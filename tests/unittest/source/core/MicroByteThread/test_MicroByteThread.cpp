@@ -1,8 +1,9 @@
 #include "gtest/gtest.h"
 
+#include "MicroByteUnitTest.h"
+
 #include "MicroByteMutex.h"
 #include "MicroByteThread.h"
-#include "MicroByteUnitTest.h"
 
 class TestMicroByteThread : public testing::Test
 {
@@ -19,8 +20,6 @@ class TestMicroByteThread : public testing::Test
 
 TEST_F(TestMicroByteThread, basicThreadTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
@@ -117,8 +116,6 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
 TEST_F(TestMicroByteThread, multipleThreadTest)
 {
-    MicroByteCpuTest cpuTest;
-
     MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
@@ -228,7 +225,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     // At this point cpu should immediately yield the "thread1" by triggering
     // PendSV interrupt and context switch from Isr is not requested */
 
-    EXPECT_EQ(cpuTest.contextSwitchTriggered(), 1);
+    EXPECT_EQ(microbyte_context_switch_triggered(), 1);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
 
     scheduler->run();
@@ -433,7 +430,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
      * -------------------------------------------------------------------------
      **/
 
-    cpuTest.setInIsr(1);
+    microbyte_set_in_isr(1);
 
     scheduler->sleep();
 
@@ -443,7 +440,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    cpuTest.setInIsr(0);
+    microbyte_set_in_isr(0);
 
     /**
      * -------------------------------------------------------------------------
@@ -452,9 +449,9 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
      * -------------------------------------------------------------------------
      **/
 
-    cpuTest.resetContextSwitchState();
+    microbyte_reset_context_switch_state();
 
-    EXPECT_EQ(cpuTest.contextSwitchTriggered(), 0);
+    EXPECT_EQ(microbyte_context_switch_triggered(), 0);
 
     EXPECT_EQ(idleThread->getPriority(), MICROBYTE_THREAD_PRIORITY_IDLE);
     EXPECT_EQ(mainThread->getPriority(), MICROBYTE_THREAD_PRIORITY_MAIN);
@@ -466,7 +463,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     // and current running thread is still in running status, nothing should
     // happened
 
-    EXPECT_EQ(cpuTest.contextSwitchTriggered(), 0);
+    EXPECT_EQ(microbyte_context_switch_triggered(), 0);
 
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
 
@@ -509,13 +506,13 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     // At this point idle thread is run as expected, because other
     // higher priority threads is in blocked state
 
-    cpuTest.setInIsr(1);
+    microbyte_set_in_isr(1);
 
-    EXPECT_EQ(cpuTest.inIsr(), 1);
+    EXPECT_EQ(microbyte_in_isr(), 1);
 
     scheduler->contextSwitch(thread1->getPriority());
 
-    EXPECT_EQ(cpuTest.contextSwitchTriggered(), 0);
+    EXPECT_EQ(microbyte_context_switch_triggered(), 0);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 1);
 
     // Because it is in ISR at this point context switch is requested instead
@@ -529,17 +526,15 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     // This equal to cpu->endOfIsr();
 
     if (scheduler->requestedContextSwitch())
-    {
-        cpuTest.triggerContextSwitch();
-    }
+        microbyte_trigger_context_switch();
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RECEIVE_BLOCKED);
 
-    cpuTest.setInIsr(0);
+    microbyte_set_in_isr(0);
 
-    EXPECT_EQ(cpuTest.inIsr(), 0);
+    EXPECT_EQ(microbyte_in_isr(), 0);
 
     scheduler->run();
 
@@ -558,12 +553,12 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     scheduler->contextSwitch(thread1->getPriority());
 
-    EXPECT_EQ(cpuTest.contextSwitchTriggered(), 1);
+    EXPECT_EQ(microbyte_context_switch_triggered(), 1);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
 
     scheduler->run();
 
-    cpuTest.resetContextSwitchState();
+    microbyte_reset_context_switch_state();
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);

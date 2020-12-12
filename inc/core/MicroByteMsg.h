@@ -5,12 +5,10 @@
 #include <stdint.h>
 
 #include "MicroByteConfig.h"
-#include "MicroByteCpu.h"
 #include "MicroByteThread.h"
 
 class MicroByteMsg
 {
-    MicroByteCpu *cpu;
     MicroByteScheduler *scheduler;
 
     int send(MicroBytePid targetPid, int blocking, unsigned state);

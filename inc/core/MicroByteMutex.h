@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "MicroByteConfig.h"
-#include "MicroByteCpu.h"
 #include "MicroByteThread.h"
 #include "CircList.h"
 
@@ -15,7 +14,6 @@ class MicroByteMutex
 {
     CircList queue;
 
-    MicroByteCpu *cpu;
     MicroByteScheduler *scheduler;
 
     int setLock(int blocking);

@@ -2,58 +2,20 @@
 #define MICROBYTE_UNITTEST_H
 
 #include "MicroByteConfig.h"
+#include "MicroByteDevice.h"
 
-class MicroByteCpuTest : public MicroByteCpu
-{
-    int inIsrState;
-    int contextSwitchState;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    public:
+void microbyte_set_in_isr(int state);
 
-    MicroByteCpuTest()
-    {
-        inIsrState = 0;
-        contextSwitchState = 0;
-    }
+int microbyte_context_switch_triggered();
 
-    unsigned disableIrq(void);
+void microbyte_reset_context_switch_state();
 
-    unsigned enableIrq(void);
-
-    void restoreIrq(unsigned state);
-
-    int inIsr(void);
-
-    void endOfIsr(void);
-
-    void triggerContextSwitch(void);
-
-    void contextExit(void);
-
-    void sleep(int deep);
-
-    void sleepUntilEvent(void);
-
-    void *getMsp(void);
-
-    char *stackInit(void *(*handler)(void*), void *arg, void *stack, int size);
-
-    // Test helper functions
-
-    void setInIsr(int state)
-    {
-        inIsrState = state;
-    }
-
-    int contextSwitchTriggered(void)
-    {
-        return contextSwitchState;
-    }
-
-    void resetContextSwitchState(void)
-    {
-        contextSwitchState = 0;
-    }
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif
