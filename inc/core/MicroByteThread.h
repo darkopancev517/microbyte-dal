@@ -21,7 +21,7 @@
 
 #define MICROBYTE_THREAD_PID_UNDEF (0)
 #define MICROBYTE_THREAD_PID_FIRST (MICROBYTE_THREAD_PID_UNDEF + 1)
-#define MICROBYTE_THREAD_PID_LAST (MICROBYTE_THREAD_PID_FIRST + MICROBYTE_CONFIG_THREAD_MAX - 1)
+#define MICROBYTE_THREAD_PID_LAST (MICROBYTE_THREAD_PID_FIRST + MICROBYTE_THREAD_MAX - 1)
 #define MICROBYTE_THREAD_PID_ISR (MICROBYTE_THREAD_PID_LAST - 1)
 
 typedef int16_t MicroBytePid;
@@ -111,7 +111,7 @@ class MicroByteScheduler
     MicroBytePid currentActivePid;
     uint32_t runQueueBitCache;
     MicroByteThread *threadsContainer[MICROBYTE_THREAD_PID_LAST + 1];
-    CircList runQueue[MICROBYTE_CONFIG_THREAD_PRIO_LEVELS];
+    CircList runQueue[MICROBYTE_THREAD_PRIO_LEVELS];
 
     static unsigned bitArithmLsb(unsigned v);
     MicroByteThread *nextThreadFromRunQueue();

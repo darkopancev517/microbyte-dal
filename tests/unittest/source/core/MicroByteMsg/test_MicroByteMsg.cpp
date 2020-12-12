@@ -28,8 +28,8 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(scheduler->activeThread(), nullptr);
     EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
 
-    MicroByteMsg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    MicroByteMsg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg mainThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
+    MicroByteMsg thread1MsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
 
     char idleStack[128];
 
@@ -495,9 +495,9 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
     EXPECT_EQ(scheduler->activeThread(), nullptr);
     EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
 
-    MicroByteMsg idleThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    MicroByteMsg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    MicroByteMsg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg idleThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
+    MicroByteMsg mainThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
+    MicroByteMsg thread1MsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
 
     char idleStack[128];
 

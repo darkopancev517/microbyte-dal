@@ -30,7 +30,7 @@ MicroByteScheduler::MicroByteScheduler()
     {
         this->threadsContainer[i] = NULL;
     }
-    for (uint8_t prio = 0; prio < MICROBYTE_CONFIG_THREAD_PRIO_LEVELS; prio++)
+    for (uint8_t prio = 0; prio < MICROBYTE_THREAD_PRIO_LEVELS; prio++)
     {
         this->runQueue[prio].next = NULL;
     }
@@ -57,7 +57,7 @@ MicroByteThread::MicroByteThread()
 MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int flags,
                                        MicroByteThreadHandler func, void *arg, const char *name)
 {
-    if (prio >= MICROBYTE_CONFIG_THREAD_PRIO_LEVELS)
+    if (prio >= MICROBYTE_THREAD_PRIO_LEVELS)
         return NULL;
 
     int totalStackSize = size;

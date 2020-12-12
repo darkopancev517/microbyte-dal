@@ -63,6 +63,48 @@ char *microbyte_stack_init(void *(*handler)(void *), void *arg, void *stack, int
     return NULL;
 }
 
+uint32_t microbyte_serial_number()
+{
+    return 0xdeadbeef;
+}
+
+char *microbyte_friendly_name()
+{
+    return "microbyte";
+}
+
+void microbyte_reset()
+{
+}
+
+const char *microbyte_dal_version()
+{
+    return "0xdeadbeef";
+}
+
+void microbyte_panic(int status_code)
+{
+    (void)status_code;
+}
+
+void microbyte_panic_timeout(int iterations)
+{
+    (void)iterations;
+}
+
+int microbyte_random(int max)
+{
+    (void)max;
+    return 0;
+}
+
+void microbyte_seed_random(uint32_t seed)
+{
+    (void)seed;
+}
+
+// test helper functions
+
 void microbyte_set_in_isr(int state)
 {
     testDeviceInIrqState = state;
