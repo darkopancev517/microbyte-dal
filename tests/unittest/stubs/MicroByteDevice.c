@@ -40,7 +40,7 @@ void microbyte_context_exit()
 {
 }
 
-void microbyte_slee(int deep)
+void microbyte_sleep(int deep)
 {
     (void)deep;
 }

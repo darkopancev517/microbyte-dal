@@ -21,7 +21,7 @@ void microbyte_trigger_context_switch();
 
 void microbyte_context_exit();
 
-void microbyte_slee(int deep);
+void microbyte_sleep(int deep);
 
 void microbyte_sleep_until_event();
 
