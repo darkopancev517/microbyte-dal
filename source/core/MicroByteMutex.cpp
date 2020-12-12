@@ -102,10 +102,9 @@ void MicroByteMutex::unlockAndSleep()
             queue.next = head->next;
             MicroByteThread *thread = MicroByteThread::get(head);
             scheduler->setThreadStatus(thread, MICROBYTE_THREAD_STATUS_PENDING);
+
             if (!queue.next)
-            {
                 queue.next = MICROBYTE_MUTEX_LOCKED;
-            }
         }
     }
     cpu->restoreIrq(state);

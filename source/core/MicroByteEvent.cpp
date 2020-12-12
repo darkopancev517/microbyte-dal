@@ -15,14 +15,13 @@ MicroByteEventQueue::MicroByteEventQueue()
 void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
 {
     if (event == NULL || thread == NULL)
-    {
         return;
-    }
+
     unsigned state = cpu->disableIrq();
+
     if (!event->node.next)
-    {
         queue.rightPush(&event->node);
-    }
+
     cpu->restoreIrq(state);
     scheduler->setThreadFlags(thread, MICROBYTE_EVENT_THREAD_FLAG);
 }
@@ -30,9 +29,8 @@ void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
 void MicroByteEventQueue::cancel(MicroByteEvent *event)
 {
     if (event == NULL)
-    {
         return;
-    }
+
     unsigned state = cpu->disableIrq();
     queue.remove(&event->node);
     event->node.next = NULL;
@@ -45,9 +43,7 @@ MicroByteEvent *MicroByteEventQueue::get()
     MicroByteEvent *result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
     cpu->restoreIrq(state);
     if (result)
-    {
         result->node.next = NULL;
-    }
     return result;
 }
 
@@ -59,9 +55,7 @@ MicroByteEvent *MicroByteEventQueue::wait()
     result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
     cpu->restoreIrq(state);
     if (result == NULL)
-    {
         scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
-    }
 #else
     do
     {
@@ -69,9 +63,7 @@ MicroByteEvent *MicroByteEventQueue::wait()
         result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
         cpu->restoreIrq(state);
         if (result == NULL)
-        {
             scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
-        }
     } while (result == NULL);
 #endif
     return result;

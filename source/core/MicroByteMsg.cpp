@@ -25,10 +25,10 @@ int MicroByteMsg::send(MicroBytePid targetPid, int blocking, unsigned state)
         if (targetThread->queuedMsg(this))
         {
             cpu->restoreIrq(state);
+
             if (curThread->getStatus() == MICROBYTE_THREAD_STATUS_REPLY_BLOCKED)
-            {
                 cpu->triggerContextSwitch();
-            }
+
             return 1;
         }
         if (!blocking)
@@ -71,11 +71,12 @@ int MicroByteMsg::receive(int blocking)
         cpu->restoreIrq(state);
         return -1;
     }
+
     int queueIndex = -1;
+
     if (curThread->msgArray != NULL)
-    {
         queueIndex = curThread->msgQueue.get();
-    }
+
     if (!blocking && (!curThread->msgWaiters.next && queueIndex == -1))
     {
         cpu->restoreIrq(state);
@@ -110,10 +111,10 @@ int MicroByteMsg::receive(int blocking)
     {
         MicroByteThread *senderThread = MicroByteThread::get(reinterpret_cast<CircList *>(next));
         MicroByteMsg *tmp = NULL;
+
         if (queueIndex >= 0)
-        {
             tmp = &curThread->msgArray[curThread->msgQueue.put()];
-        }
+
         MicroByteMsg *senderMsg = static_cast<MicroByteMsg *>(senderThread->waitData);
         if (tmp != NULL)
         {
@@ -131,11 +132,12 @@ int MicroByteMsg::receive(int blocking)
             scheduler->setThreadStatus(senderThread, MICROBYTE_THREAD_STATUS_PENDING);
             senderPrio = senderThread->priority;
         }
+
         cpu->restoreIrq(state);
+
         if (senderPrio < MICROBYTE_THREAD_PRIORITY_IDLE)
-        {
             scheduler->contextSwitch(senderPrio);
-        }
+
         return 1;
     }
 }
@@ -143,26 +145,22 @@ int MicroByteMsg::receive(int blocking)
 int MicroByteMsg::send(MicroBytePid targetPid)
 {
     if (cpu->inIsr())
-    {
         return sendInIsr(targetPid);
-    }
+
     if (scheduler->activePid() == targetPid)
-    {
         return sendToSelf();
-    }
+
     return send(targetPid, 1, cpu->disableIrq());
 }
 
 int MicroByteMsg::trySend(MicroBytePid targetPid)
 {
     if (cpu->inIsr())
-    {
         return sendInIsr(targetPid);
-    }
+
     if (scheduler->activePid() == targetPid)
-    {
         return sendToSelf();
-    }
+
     return send(targetPid, 0, cpu->disableIrq());
 }
 
@@ -184,11 +182,12 @@ int MicroByteMsg::sendToSelf(void)
 int MicroByteMsg::sendInIsr(MicroBytePid targetPid)
 {
     MicroByteThread *targetThread = scheduler->threadFromContainer(targetPid);
+
     if (targetThread == NULL || !targetThread->hasMsgQueue())
-    {
         return -1;
-    }
+
     senderPid = MICROBYTE_THREAD_PID_ISR;
+
     if (targetThread->status == MICROBYTE_THREAD_STATUS_RECEIVE_BLOCKED)
     {
         MicroByteMsg *targetMsg = static_cast<MicroByteMsg *>(targetThread->waitData);
@@ -222,10 +221,10 @@ int MicroByteMsg::sendReceive(MicroByteMsg *reply, MicroBytePid targetPid)
 {
     unsigned state = cpu->disableIrq();
     MicroByteThread *curThread = scheduler->activeThread();
+
     if (curThread->pid == targetPid || !curThread->hasMsgQueue())
-    {
         return -1;
-    }
+
     scheduler->setThreadStatus(curThread, MICROBYTE_THREAD_STATUS_REPLY_BLOCKED);
     curThread->waitData = static_cast<void *>(reply);
     *reply = *this;
