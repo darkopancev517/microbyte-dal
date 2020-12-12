@@ -52,7 +52,7 @@ void *MicroByteCpuTest::getMsp(void)
     return NULL;
 }
 
-char *MicroByteCpuTest::stackInit(ThreadFunc func, void *arg, void *stack, int size)
+char *MicroByteCpuTest::stackInit(MicroByteThreadHandler func, void *arg, void *stack, int size)
 {
     (void)func;
     (void)arg;

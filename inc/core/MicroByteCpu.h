@@ -58,7 +58,7 @@ class MicroByteCpu
         return NULL;
     }
 
-    virtual char *stackInit(ThreadFunc func, void *arg, void *stack, int size)
+    virtual char *stackInit(MicroByteThreadHandler func, void *arg, void *stack, int size)
     {
         (void)func;
         (void)arg;

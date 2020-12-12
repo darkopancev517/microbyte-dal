@@ -9,38 +9,38 @@
 
 #define MICROBYTE_EVENT_THREAD_FLAG (0x1)
 
-class Event
+class MicroByteEvent
 {
     public:
 
     CircList node;
 
-    Event();
+    MicroByteEvent();
 };
 
-class EventQueue
+class MicroByteEventQueue
 {
     CircList queue;
     MicroByteCpu *cpu;
-    ThreadScheduler *scheduler;
+    MicroByteScheduler *scheduler;
 
     public:
 
-    EventQueue();
+    MicroByteEventQueue();
 
-    void post(Event *event, Thread *thread);
+    void post(MicroByteEvent *event, MicroByteThread *thread);
 
-    void cancel(Event *event);
+    void cancel(MicroByteEvent *event);
 
-    Event *get();
+    MicroByteEvent *get();
 
-    Event *wait();
+    MicroByteEvent *wait();
 
-    int release(Event *event);
+    int release(MicroByteEvent *event);
 
     int pending();
 
-    Event *peek();
+    MicroByteEvent *peek();
 };
 
 #endif

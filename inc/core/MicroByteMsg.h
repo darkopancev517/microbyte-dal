@@ -7,32 +7,32 @@
 #include "MicroByteConfig.h"
 #include "MicroByteCpu.h"
 
-class Msg
+class MicroByteMsg
 {
     MicroByteCpu *cpu;
-    ThreadScheduler *scheduler;
+    MicroByteScheduler *scheduler;
 
-    int send(ThreadPid targetPid, int blocking, unsigned state);
+    int send(MicroBytePid targetPid, int blocking, unsigned state);
     int receive(int blocking);
 
     public:
 
-    ThreadPid senderPid;
+    MicroBytePid senderPid;
     uint16_t type;
     union {
         void *ptr;
         uint32_t value;
     } content;
 
-    Msg();
+    MicroByteMsg();
 
-    int send(ThreadPid targetPid);
+    int send(MicroBytePid targetPid);
 
-    int trySend(ThreadPid targetPid);
+    int trySend(MicroBytePid targetPid);
 
     int sendToSelf();
 
-    int sendInIsr(ThreadPid targetPid);
+    int sendInIsr(MicroBytePid targetPid);
 
     int sentByIsr();
 
@@ -40,11 +40,11 @@ class Msg
 
     int tryReceive();
 
-    int sendReceive(Msg *reply, ThreadPid targetPid);
+    int sendReceive(MicroByteMsg *reply, MicroBytePid targetPid);
 
-    int reply(Msg *reply);
+    int reply(MicroByteMsg *reply);
 
-    int replyInIsr(Msg *reply);
+    int replyInIsr(MicroByteMsg *reply);
 };
 
 #endif

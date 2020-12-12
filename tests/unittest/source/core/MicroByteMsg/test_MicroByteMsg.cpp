@@ -22,19 +22,19 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
     EXPECT_EQ(scheduler->activeThread(), nullptr);
     EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
 
-    Msg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    Msg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
 
     char idleStack[128];
 
-    Thread *idleThread = Thread::init(idleStack, sizeof(idleStack),
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
                                       MICROBYTE_THREAD_PRIORITY_IDLE,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -51,7 +51,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
 
     char mainStack[128];
 
-    Thread *mainThread = Thread::init(mainStack, sizeof(mainStack),
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
                                       MICROBYTE_THREAD_PRIORITY_MAIN,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -70,7 +70,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -111,7 +111,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg = Msg();
+    MicroByteMsg msg = MicroByteMsg();
 
     EXPECT_EQ(msg.send(idleThread->getPid()), -1);
     EXPECT_EQ(msg.send(idleThread->getPid()), -1);
@@ -130,7 +130,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg1 = Msg();
+    MicroByteMsg msg1 = MicroByteMsg();
 
     msg1.receive();
 
@@ -149,7 +149,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RECEIVE_BLOCKED);
 
-    Msg msg2 = Msg();
+    MicroByteMsg msg2 = MicroByteMsg();
 
     EXPECT_EQ(msg2.senderPid, MICROBYTE_THREAD_PID_UNDEF);
     EXPECT_EQ(msg2.type, 0);
@@ -186,7 +186,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
      * -------------------------------------------------------------------------
      **/
 
-    Msg msg3 = Msg();
+    MicroByteMsg msg3 = MicroByteMsg();
 
     EXPECT_EQ(msg3.senderPid, MICROBYTE_THREAD_PID_UNDEF);
     EXPECT_EQ(msg3.type, 0);
@@ -222,7 +222,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_SLEEPING);
 
-    Msg msg4 = Msg();
+    MicroByteMsg msg4 = MicroByteMsg();
 
     EXPECT_EQ(msg4.senderPid, MICROBYTE_THREAD_PID_UNDEF);
     EXPECT_EQ(msg4.type, 0);
@@ -382,7 +382,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_REPLY_BLOCKED);
 
-    Msg msg5 = Msg();
+    MicroByteMsg msg5 = MicroByteMsg();
 
     EXPECT_EQ(msg5.receive(), 1);
 
@@ -397,7 +397,7 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_REPLY_BLOCKED);
 
-    Msg msg6 = Msg();
+    MicroByteMsg msg6 = MicroByteMsg();
 
     msg6.type = 0xff;
     msg6.content.value = 0xaaaacccc;
@@ -491,20 +491,20 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
     EXPECT_EQ(scheduler->activeThread(), nullptr);
     EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
 
-    Msg idleThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    Msg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
-    Msg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg idleThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg mainThreadMsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
+    MicroByteMsg thread1MsgQueue[MICROBYTE_CONFIG_MSG_QUEUE_SIZE];
 
     char idleStack[128];
 
-    Thread *idleThread = Thread::init(idleStack, sizeof(idleStack),
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
                                       MICROBYTE_THREAD_PRIORITY_IDLE,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -523,7 +523,7 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
 
     char mainStack[128];
 
-    Thread *mainThread = Thread::init(mainStack, sizeof(mainStack),
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
                                       MICROBYTE_THREAD_PRIORITY_MAIN,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -542,7 +542,7 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -596,10 +596,10 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_SLEEPING);
 
-    Msg msg1 = Msg();
-    Msg msg2 = Msg();
-    Msg msg3 = Msg();
-    Msg msg4 = Msg();
+    MicroByteMsg msg1 = MicroByteMsg();
+    MicroByteMsg msg2 = MicroByteMsg();
+    MicroByteMsg msg3 = MicroByteMsg();
+    MicroByteMsg msg4 = MicroByteMsg();
 
     msg1.type = 0xff;
     msg1.content.value = 0x1;
@@ -636,7 +636,7 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    Msg msg5 = Msg();
+    MicroByteMsg msg5 = MicroByteMsg();
 
     EXPECT_EQ(msg5.receive(), 1);
 
@@ -693,7 +693,7 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_SLEEPING);
 
-    Msg msg6 = Msg();
+    MicroByteMsg msg6 = MicroByteMsg();
 
     msg6.type = 0xff;
     msg6.content.value = 0xdeadbeef;

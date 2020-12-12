@@ -21,7 +21,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
@@ -30,7 +30,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char idleStack[128];
 
-    Thread *idleThread = Thread::init(idleStack, sizeof(idleStack),
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
                                       MICROBYTE_THREAD_PRIORITY_IDLE,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -44,7 +44,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char mainStack[128];
 
-    Thread *mainThread = Thread::init(mainStack, sizeof(mainStack),
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
                                       MICROBYTE_THREAD_PRIORITY_MAIN,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -58,7 +58,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -72,7 +72,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char stack2[128];
 
-    Thread *thread2 = Thread::init(stack2, sizeof(stack2),
+    MicroByteThread *thread2 = MicroByteThread::init(stack2, sizeof(stack2),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -121,11 +121,11 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
      **/
 
 
-    Mutex mutex = Mutex();
+    MicroByteMutex mutex = MicroByteMutex();
 
     mutex.lock();
 
-    // Mutex was unlocked when set lock for the first time, therefore current
+    // MicroByteMutex was unlocked when set lock for the first time, therefore current
     // thread (thread1) expected still running state
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
@@ -140,7 +140,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
     mutex.tryLock();
     mutex.tryLock();
 
-    // Mutex was set to lock, nothing will happen when calling tryLock()
+    // MicroByteMutex was set to lock, nothing will happen when calling tryLock()
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
@@ -228,9 +228,9 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
      * -------------------------------------------------------------------------
      **/
 
-    Mutex mutex1 = Mutex(MICROBYTE_MUTEX_LOCKED);
-    Mutex mutex2 = Mutex(MICROBYTE_MUTEX_LOCKED);
-    Mutex mutex3 = Mutex(MICROBYTE_MUTEX_LOCKED);
+    MicroByteMutex mutex1 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
+    MicroByteMutex mutex2 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
+    MicroByteMutex mutex3 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);

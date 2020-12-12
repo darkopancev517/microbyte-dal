@@ -1,18 +1,18 @@
 #include "MicroByteEvent.h"
 
-Event::Event()
+MicroByteEvent::MicroByteEvent()
 {
     this->node.next = NULL;
 }
 
-EventQueue::EventQueue()
+MicroByteEventQueue::MicroByteEventQueue()
 {
     this->queue.next = NULL;
     this->cpu = uByteCpu;
-    this->scheduler = &ThreadScheduler::get();
+    this->scheduler = &MicroByteScheduler::get();
 }
 
-void EventQueue::post(Event *event, Thread *thread)
+void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
 {
     if (event == NULL || thread == NULL)
     {
@@ -27,7 +27,7 @@ void EventQueue::post(Event *event, Thread *thread)
     scheduler->setThreadFlags(thread, MICROBYTE_EVENT_THREAD_FLAG);
 }
 
-void EventQueue::cancel(Event *event)
+void MicroByteEventQueue::cancel(MicroByteEvent *event)
 {
     if (event == NULL)
     {
@@ -39,10 +39,10 @@ void EventQueue::cancel(Event *event)
     cpu->restoreIrq(state);
 }
 
-Event *EventQueue::get()
+MicroByteEvent *MicroByteEventQueue::get()
 {
     unsigned state = cpu->disableIrq();
-    Event *result = reinterpret_cast<Event *>(queue.leftPop());
+    MicroByteEvent *result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
     cpu->restoreIrq(state);
     if (result)
     {
@@ -51,12 +51,12 @@ Event *EventQueue::get()
     return result;
 }
 
-Event *EventQueue::wait()
+MicroByteEvent *MicroByteEventQueue::wait()
 {
-    Event *result = NULL;
+    MicroByteEvent *result = NULL;
 #ifdef UNITTEST
     unsigned state = cpu->disableIrq();
-    result = reinterpret_cast<Event *>(queue.leftPop());
+    result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
     cpu->restoreIrq(state);
     if (result == NULL)
     {
@@ -66,7 +66,7 @@ Event *EventQueue::wait()
     do
     {
         unsigned state = cpu->disableIrq();
-        result = reinterpret_cast<Event *>(queue.leftPop());
+        result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
         cpu->restoreIrq(state);
         if (result == NULL)
         {
@@ -77,7 +77,7 @@ Event *EventQueue::wait()
     return result;
 }
 
-int EventQueue::release(Event *event)
+int MicroByteEventQueue::release(MicroByteEvent *event)
 {
     // Before releasing the event, make sure it's no longer in the event queue
     if (queue.find(reinterpret_cast<CircList *>(event)) == NULL)
@@ -91,12 +91,12 @@ int EventQueue::release(Event *event)
     }
 }
 
-int EventQueue::pending()
+int MicroByteEventQueue::pending()
 {
     return queue.count();
 }
 
-Event *EventQueue::peek()
+MicroByteEvent *MicroByteEventQueue::peek()
 {
-    return reinterpret_cast<Event *>(queue.leftPeek());
+    return reinterpret_cast<MicroByteEvent *>(queue.leftPeek());
 }

@@ -11,27 +11,27 @@
 
 #define MICROBYTE_MUTEX_LOCKED ((CircList *)-1)
 
-class Mutex
+class MicroByteMutex
 {
     CircList queue;
 
     MicroByteCpu *cpu;
-    ThreadScheduler *scheduler;
+    MicroByteScheduler *scheduler;
 
     int setLock(int blocking);
     template <typename Type> inline Type &get() const;
 
     public:
 
-    Mutex();
+    MicroByteMutex();
 
-    Mutex(CircList *locked);
+    MicroByteMutex(CircList *locked);
 
     int tryLock() { return setLock(0); }
 
     void lock() { setLock(1); }
 
-    ThreadPid peek();
+    MicroBytePid peek();
 
     void unlock();
 

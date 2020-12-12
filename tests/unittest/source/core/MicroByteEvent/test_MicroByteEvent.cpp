@@ -26,7 +26,7 @@ class CustomEvent
         , data(0)
     {
     }
-    Event super;
+    MicroByteEvent super;
     uint32_t data;
 };
 
@@ -34,7 +34,7 @@ TEST_F(TestMicroByteEvent, eventTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
@@ -43,7 +43,7 @@ TEST_F(TestMicroByteEvent, eventTest)
 
     char idleStack[128];
 
-    Thread *idleThread = Thread::init(idleStack, sizeof(idleStack),
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
                                       MICROBYTE_THREAD_PRIORITY_IDLE,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -57,7 +57,7 @@ TEST_F(TestMicroByteEvent, eventTest)
 
     char mainStack[128];
 
-    Thread *mainThread = Thread::init(mainStack, sizeof(mainStack),
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
                                       MICROBYTE_THREAD_PRIORITY_MAIN,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -71,7 +71,7 @@ TEST_F(TestMicroByteEvent, eventTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -107,7 +107,7 @@ TEST_F(TestMicroByteEvent, eventTest)
      * -------------------------------------------------------------------------
      **/
 
-    EventQueue eventQueue = EventQueue();
+    MicroByteEventQueue eventQueue = MicroByteEventQueue();
 
     EXPECT_EQ(eventQueue.wait(), nullptr);
 
@@ -121,7 +121,7 @@ TEST_F(TestMicroByteEvent, eventTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY);
 
-    Event event1 = Event();
+    MicroByteEvent event1 = MicroByteEvent();
 
     eventQueue.post(&event1, thread1);
     eventQueue.post(&event1, thread1);
@@ -183,7 +183,7 @@ TEST_F(TestMicroByteEvent, eventTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    Event *ev = eventQueue.get();
+    MicroByteEvent *ev = eventQueue.get();
 
     // event get() will automatically release the event so no need to call event
     // release
@@ -210,10 +210,10 @@ TEST_F(TestMicroByteEvent, eventTest)
      * -------------------------------------------------------------------------
      **/
 
-    Event event2 = Event();
-    Event event3 = Event();
-    Event event4 = Event();
-    Event event5 = Event();
+    MicroByteEvent event2 = MicroByteEvent();
+    MicroByteEvent event3 = MicroByteEvent();
+    MicroByteEvent event4 = MicroByteEvent();
+    MicroByteEvent event5 = MicroByteEvent();
 
     eventQueue.post(&event1, thread1);
     eventQueue.post(&event2, thread1);
@@ -328,7 +328,7 @@ TEST_F(TestMicroByteEvent, eventTest)
 
     customEv.data = 0xdeadbeef;
 
-    eventQueue.post(reinterpret_cast<Event *>(&customEv), thread1);
+    eventQueue.post(reinterpret_cast<MicroByteEvent *>(&customEv), thread1);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
@@ -341,7 +341,7 @@ TEST_F(TestMicroByteEvent, eventTest)
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
     CustomEvent *event = (CustomEvent *)eventQueue.wait();
-    eventQueue.release(reinterpret_cast<Event *>(event));
+    eventQueue.release(reinterpret_cast<MicroByteEvent *>(event));
 
     EXPECT_NE(event, nullptr);
     EXPECT_EQ(event->data, 0xdeadbeef);

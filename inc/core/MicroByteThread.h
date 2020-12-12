@@ -8,7 +8,7 @@
 #include "List.h"
 #include "Cib.h"
 
-#define MICROBYTE_THREAD_STATUS_NOT_FOUND ((ThreadStatus)-1)
+#define MICROBYTE_THREAD_STATUS_NOT_FOUND ((MicroByteThreadStatus)-1)
 
 #define MICROBYTE_THREAD_FLAGS_SLEEP (0x1)
 #define MICROBYTE_THREAD_FLAGS_WOUT_YIELD (0x2)
@@ -24,9 +24,9 @@
 #define MICROBYTE_THREAD_PID_LAST (MICROBYTE_THREAD_PID_FIRST + MICROBYTE_CONFIG_THREAD_MAX - 1)
 #define MICROBYTE_THREAD_PID_ISR (MICROBYTE_THREAD_PID_LAST - 1)
 
-typedef int16_t ThreadPid;
+typedef int16_t MicroBytePid;
 
-typedef void *(*ThreadFunc)(void *arg);
+typedef void *(*MicroByteThreadHandler)(void *arg);
 
 typedef enum
 {
@@ -43,24 +43,24 @@ typedef enum
     MICROBYTE_THREAD_STATUS_RUNNING,
     MICROBYTE_THREAD_STATUS_PENDING,
     MICROBYTE_THREAD_STATUS_NUMOF,
-} ThreadStatus;
+} MicroByteThreadStatus;
 
 class MicroByteCpu;
-class ThreadScheduler;
-class Msg;
+class MicroByteScheduler;
+class MicroByteMsg;
 
-class Thread
+class MicroByteThread
 {
-    friend class ThreadScheduler;
-    friend class Mutex;
-    friend class Msg;
+    friend class MicroByteScheduler;
+    friend class MicroByteMutex;
+    friend class MicroByteMsg;
 
     protected:
 
     char *stackPointer;
-    ThreadStatus status;
+    MicroByteThreadStatus status;
     uint8_t priority;
-    ThreadPid pid;
+    MicroBytePid pid;
     CircList runQueueEntry;
     char *stackStart;
     const char *name;
@@ -73,77 +73,78 @@ class Thread
     void *waitData;
     List msgWaiters;
     Cib msgQueue;
-    Msg *msgArray;
+    MicroByteMsg *msgArray;
 
     public:
 
-    Thread();
+    MicroByteThread();
 
-    static Thread *init(char *stack, int size, uint8_t prio, int flags, ThreadFunc func, void *arg, const char *name);
+    static MicroByteThread *init(char *stack, int size, uint8_t prio, int flags,
+                                 MicroByteThreadHandler func, void *arg, const char *name);
 
     uint8_t getPriority() { return priority; }
 
-    ThreadStatus getStatus() { return status; }
+    MicroByteThreadStatus getStatus() { return status; }
 
-    void setStatus(ThreadStatus newStatus) { status = newStatus; }
+    void setStatus(MicroByteThreadStatus newStatus) { status = newStatus; }
 
-    ThreadPid getPid() { return pid; }
+    MicroBytePid getPid() { return pid; }
 
     const char *getName() { return name; }
 
     void addTo(CircList *queue);
 
-    static Thread *get(CircList *entry);
+    static MicroByteThread *get(CircList *entry);
 
-    void setMsgQueue(Msg *msg, unsigned int size);
+    void setMsgQueue(MicroByteMsg *msg, unsigned int size);
 
-    int queuedMsg(Msg *msg);
+    int queuedMsg(MicroByteMsg *msg);
 
     int numOfMsgInQueue();
 
     int hasMsgQueue();
 };
 
-class ThreadScheduler
+class MicroByteScheduler
 {
     int numOfThreadsInContainer;
     unsigned int contextSwitchRequest;
-    Thread *currentActiveThread;
-    ThreadPid currentActivePid;
+    MicroByteThread *currentActiveThread;
+    MicroBytePid currentActivePid;
     uint32_t runQueueBitCache;
-    Thread *threadsContainer[MICROBYTE_THREAD_PID_LAST + 1];
+    MicroByteThread *threadsContainer[MICROBYTE_THREAD_PID_LAST + 1];
     CircList runQueue[MICROBYTE_CONFIG_THREAD_PRIO_LEVELS];
     MicroByteCpu *cpu;
 
     static unsigned bitArithmLsb(unsigned v);
-    Thread *nextThreadFromRunQueue();
+    MicroByteThread *nextThreadFromRunQueue();
 
-    uint16_t clearThreadFlagsAtomic(Thread *thread, uint16_t mask);
-    void waitThreadFlags(uint16_t mask, Thread *thread, ThreadStatus newStatus, unsigned state);
+    uint16_t clearThreadFlagsAtomic(MicroByteThread *thread, uint16_t mask);
+    void waitThreadFlags(uint16_t mask, MicroByteThread *thread, MicroByteThreadStatus newStatus, unsigned state);
     void waitAnyThreadFlagsBlocked(uint16_t mask);
 
     public:
 
-    static ThreadScheduler &init();
-    static ThreadScheduler &get();
+    static MicroByteScheduler &init();
+    static MicroByteScheduler &get();
 
-    ThreadScheduler();
+    MicroByteScheduler();
 
-    void setThreadStatus(Thread *thread, ThreadStatus status);
+    void setThreadStatus(MicroByteThread *thread, MicroByteThreadStatus status);
 
     void contextSwitch(uint8_t priority);
 
-    Thread *threadFromContainer(ThreadPid pid) { return threadsContainer[pid]; }
+    MicroByteThread *threadFromContainer(MicroBytePid pid) { return threadsContainer[pid]; }
 
-    void addThread(Thread *thread, ThreadPid pid) { threadsContainer[pid] = thread; }
+    void addThread(MicroByteThread *thread, MicroBytePid pid) { threadsContainer[pid] = thread; }
 
     void addNumOfThreads() { numOfThreadsInContainer += 1; }
 
     int numOfThreads() { return numOfThreadsInContainer; }
 
-    Thread *activeThread() { return currentActiveThread; }
+    MicroByteThread *activeThread() { return currentActiveThread; }
 
-    ThreadPid activePid() { return currentActivePid; }
+    MicroBytePid activePid() { return currentActivePid; }
 
     int requestedContextSwitch() { return contextSwitchRequest; }
 
@@ -155,11 +156,11 @@ class ThreadScheduler
 
     void exit();
 
-    int wakeUpThread(ThreadPid pid);
+    int wakeUpThread(MicroBytePid pid);
 
     void run();
 
-    void setThreadFlags(Thread *thread, uint16_t mask);
+    void setThreadFlags(MicroByteThread *thread, uint16_t mask);
 
     uint16_t clearThreadFlags(uint16_t mask);
 
@@ -169,7 +170,7 @@ class ThreadScheduler
 
     uint16_t waitOneThreadFlags(uint16_t mask);
 
-    int wakeThreadFlags(Thread *thread);
+    int wakeThreadFlags(MicroByteThread *thread);
 };
 
 #endif

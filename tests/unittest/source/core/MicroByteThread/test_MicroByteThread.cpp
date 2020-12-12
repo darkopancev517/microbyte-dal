@@ -21,7 +21,7 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
@@ -38,7 +38,7 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -73,7 +73,7 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
     char stack2[128];
 
-    Thread *thread2 = Thread::init(stack2, sizeof(stack2),
+    MicroByteThread *thread2 = MicroByteThread::init(stack2, sizeof(stack2),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -110,7 +110,7 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
     // Try to get removed thread from scheduler
 
-    Thread *thread = scheduler->threadFromContainer(thread2->getPid());
+    MicroByteThread *thread = scheduler->threadFromContainer(thread2->getPid());
 
     EXPECT_EQ(thread, nullptr);
 }
@@ -119,7 +119,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 {
     MicroByteCpuTest cpuTest;
 
-    ThreadScheduler *scheduler = &ThreadScheduler::init();
+    MicroByteScheduler *scheduler = &MicroByteScheduler::init();
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
@@ -136,7 +136,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     char idleStack[128];
 
-    Thread *idleThread = Thread::init(idleStack, sizeof(idleStack),
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
                                       MICROBYTE_THREAD_PRIORITY_IDLE,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -150,7 +150,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     char mainStack[128];
 
-    Thread *mainThread = Thread::init(mainStack, sizeof(mainStack),
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
                                       MICROBYTE_THREAD_PRIORITY_MAIN,
                                       MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
                                       MICROBYTE_THREAD_FLAGS_STACKMARKER,
@@ -214,7 +214,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     char stack1[128];
 
-    Thread *thread1 = Thread::init(stack1, sizeof(stack1),
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 1,
                                    MICROBYTE_THREAD_FLAGS_STACKMARKER,
                                    NULL, NULL, "thread1");
@@ -257,7 +257,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
      * -------------------------------------------------------------------------
      **/
 
-    Mutex mutex = Mutex();
+    MicroByteMutex mutex = MicroByteMutex();
 
     mutex.lock();
 
@@ -587,7 +587,7 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     // Intentionally create thread with misaligment stack boundary on
     // 16/32 bit boundary (&stack2[1]) will do the job
 
-    Thread *thread2 = Thread::init(&stack2[1], sizeof(stack2) - 4,
+    MicroByteThread *thread2 = MicroByteThread::init(&stack2[1], sizeof(stack2) - 4,
                                    MICROBYTE_THREAD_PRIORITY_MAIN - 2,
                                    MICROBYTE_THREAD_FLAGS_SLEEP,
                                    NULL, NULL, "thread2");
