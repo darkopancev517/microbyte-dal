@@ -3,6 +3,10 @@
 
 #include "mbed.h"
 
+#ifdef MICROBYTE_PROJECT_CONFIG_FILE
+#include MICROBYTE_PROJECT_CONFIG_FILE
+#endif
+
 #ifndef MICROBYTE_DBG
 #define MICROBYTE_DBG 0
 #endif
