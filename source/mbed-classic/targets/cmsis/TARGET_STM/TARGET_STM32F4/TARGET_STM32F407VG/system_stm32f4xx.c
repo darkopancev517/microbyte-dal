@@ -23,9 +23,9 @@
   * This file configures the system clock as follows:
   *-----------------------------------------------------------------------------
   * System clock source                | 1- PLL_HSE_EXTC        | 3- PLL_HSI
-  *                                    | (external 8 MHz clock) | (internal 16 MHz)
+  *                                    | (external 16 MHz clock)| (internal 16 MHz)
   *                                    | 2- PLL_HSE_XTAL        |
-  *                                    | (external 8 MHz xtal)  |
+  *                                    | (external 16 MHz xtal) |
   *-----------------------------------------------------------------------------
   * SYSCLK(MHz)                        | 168                    | 168
   *-----------------------------------------------------------------------------
@@ -83,7 +83,7 @@
 #include "hal_tick.h"
 
 #if !defined  (HSE_VALUE) 
-  #define HSE_VALUE    ((uint32_t)8000000) /*!< Default value of the External oscillator in Hz */
+  #define HSE_VALUE    ((uint32_t)16000000) /*!< Default value of the External oscillator in Hz */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSI_VALUE)
@@ -155,7 +155,7 @@
                is no need to call the 2 first functions listed above, since SystemCoreClock
                variable is updated automatically.
   */
-  uint32_t SystemCoreClock = 168000000; /* [CHANGED FOR MBED] */
+uint32_t SystemCoreClock = 168000000; /* [CHANGED FOR MBED] */
 const uint8_t AHBPrescTable[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /**
@@ -602,16 +602,16 @@ uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
   RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_HSE;
   if (bypass == 0)
   {
-    RCC_OscInitStruct.HSEState          = RCC_HSE_ON; /* External 8 MHz xtal on OSC_IN/OSC_OUT */
+    RCC_OscInitStruct.HSEState          = RCC_HSE_ON; /* External 16 MHz xtal on OSC_IN/OSC_OUT */
   }
   else
   {
-    RCC_OscInitStruct.HSEState          = RCC_HSE_BYPASS; /* External 8 MHz clock on OSC_IN */
+    RCC_OscInitStruct.HSEState          = RCC_HSE_BYPASS; /* External 16 MHz clock on OSC_IN */
   }
-RCC_OscInitStruct.HSIState            = RCC_HSI_OFF;
+  RCC_OscInitStruct.HSIState            = RCC_HSI_OFF;
   RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM            = 8;             // VCO input clock = 1 MHz (8 MHz / 8)
+  RCC_OscInitStruct.PLL.PLLM            = 16;            // VCO input clock = 1 MHz (16 MHz / 16)
   RCC_OscInitStruct.PLL.PLLN            = 336;           // VCO output clock = 336 MHz (1 MHz * 336)
   RCC_OscInitStruct.PLL.PLLP            = RCC_PLLP_DIV2; // PLLCLK = 168 MHz (336 MHz / 2)
   RCC_OscInitStruct.PLL.PLLQ            = 7;             // USB clock = 48 MHz (336 MHz / 7) --> OK for USB
