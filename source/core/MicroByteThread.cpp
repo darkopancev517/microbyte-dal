@@ -290,12 +290,11 @@ void MicroByteScheduler::yield()
 
 void MicroByteScheduler::exit()
 {
-    uint32_t irqmask = microbyte_disable_irq();
+    (void) microbyte_disable_irq();
     threadsContainer[sched_active_pid] = NULL;
     numOfThreadsInContainer -= 1;
     setThreadStatus((MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_STOPPED);
     sched_active_thread = NULL;
-    microbyte_restore_irq(irqmask);
     microbyte_trigger_context_switch();
 }
 
