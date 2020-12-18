@@ -1,15 +1,13 @@
 #include "MicroByteDevice.h"
 #include "MicroByteMutex.h"
 
-MicroByteMutex::MicroByteMutex()
+MicroByteMutex::MicroByteMutex(int initLocked)
     : queue()
 {
-}
-
-MicroByteMutex::MicroByteMutex(CircList *locked)
-    : queue()
-{
-    this->queue.next = locked;
+    if (initLocked)
+    {
+        this->queue.next = MICROBYTE_MUTEX_LOCKED;
+    }
 }
 
 int MicroByteMutex::setLock(int blocking)

@@ -82,8 +82,8 @@ class MicroByteThread
 
     MicroByteThread();
 
-    static MicroByteThread *init(char *stack, int size, uint8_t prio, int flags,
-                                 MicroByteThreadHandler func, void *arg, const char *name);
+    static MicroByteThread *init(char *stack, int size, uint8_t prio,
+            int flags, MicroByteThreadHandler func, void *arg, const char *name);
 
     uint8_t getPriority() { return priority; }
 

@@ -10,6 +10,9 @@
 
 #define MICROBYTE_MUTEX_LOCKED ((CircList *)-1)
 
+#define MICROBYTE_MUTEX_INIT_UNLOCKED   0
+#define MICROBYTE_MUTEX_INIT_LOCKED     1
+
 class MicroByteMutex
 {
     CircList queue;
@@ -19,9 +22,7 @@ class MicroByteMutex
 
     public:
 
-    MicroByteMutex();
-
-    MicroByteMutex(CircList *locked);
+    MicroByteMutex(int initLocked = MICROBYTE_MUTEX_INIT_LOCKED);
 
     int tryLock() { return setLock(0); }
 

@@ -59,8 +59,8 @@ MicroByteThread::MicroByteThread()
 {
 }
 
-MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int flags,
-                                       MicroByteThreadHandler func, void *arg, const char *name)
+MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio,
+        int flags, MicroByteThreadHandler func, void *arg, const char *name)
 {
     if (prio >= MICROBYTE_THREAD_PRIO_LEVELS)
         return NULL;
