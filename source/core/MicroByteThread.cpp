@@ -6,10 +6,17 @@
 
 DEFINE_ALIGNED_VAR(uByteScheduler, sizeof(MicroByteScheduler), uint64_t);
 
+extern "C" {
+void *sched_active_thread = NULL;
+int16_t sched_active_pid = MICROBYTE_THREAD_PID_UNDEF;
+}
+
 MicroByteScheduler &MicroByteScheduler::init()
 {
     MicroByteScheduler *scheduler = &get();
     scheduler = new (&uByteScheduler) MicroByteScheduler();
+    sched_active_thread = NULL;
+    sched_active_pid = MICROBYTE_THREAD_PID_UNDEF;
     return *scheduler;
 }
 
@@ -22,8 +29,6 @@ MicroByteScheduler &MicroByteScheduler::get()
 MicroByteScheduler::MicroByteScheduler()
     : numOfThreadsInContainer(0)
     , contextSwitchRequest(0)
-    , currentActiveThread(NULL)
-    , currentActivePid(MICROBYTE_THREAD_PID_UNDEF)
     , runQueueBitCache(0)
 {
     for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i)
@@ -100,7 +105,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
         *(uintptr_t *)stack = reinterpret_cast<uintptr_t>(stack);
     }
 
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
 
     MicroBytePid pid = MICROBYTE_THREAD_PID_UNDEF;
 
@@ -117,7 +122,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
 
     if (pid == MICROBYTE_THREAD_PID_UNDEF)
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
         return NULL;
     }
 
@@ -143,13 +148,13 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio, int 
 
         if (!(flags & MICROBYTE_THREAD_FLAGS_WOUT_YIELD))
         {
-            microbyte_restore_irq(state);
+            microbyte_restore_irq(irqmask);
             scheduler.contextSwitch(prio);
             return thread;
         }
     }
 
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
 
     return thread;
 }
@@ -182,7 +187,7 @@ void MicroByteScheduler::setThreadStatus(MicroByteThread *thread, MicroByteThrea
 
 void MicroByteScheduler::contextSwitch(uint8_t priority)
 {
-    MicroByteThread *curThread = currentActiveThread;
+    MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
     uint8_t curPriority = curThread->getPriority();
     int isInRunQueue = (curThread->getStatus() >= MICROBYTE_THREAD_STATUS_RUNNING);
     // The lowest priority number is the highest priority thread
@@ -232,31 +237,31 @@ MicroByteThread *MicroByteScheduler::nextThreadFromRunQueue()
 
 uint16_t MicroByteScheduler::clearThreadFlagsAtomic(MicroByteThread *thread, uint16_t mask)
 {
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     mask &= thread->flags;
     thread->flags &= ~mask;
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     return mask;
 }
 
-void MicroByteScheduler::waitThreadFlags(uint16_t mask, MicroByteThread *thread, MicroByteThreadStatus newStatus, unsigned state)
+void MicroByteScheduler::waitThreadFlags(uint16_t mask, MicroByteThread *thread, MicroByteThreadStatus newStatus, uint32_t irqmask)
 {
     thread->waitFlags = mask;
     setThreadStatus(thread, newStatus);
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::waitAnyThreadFlagsBlocked(uint16_t mask)
 {
-    unsigned state = microbyte_disable_irq();
-    if (!(currentActiveThread->flags & mask))
+    uint32_t irqmask = microbyte_disable_irq();
+    if (!(((MicroByteThread *)sched_active_thread)->flags & mask))
     {
-        waitThreadFlags(mask, currentActiveThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY, state);
+        waitThreadFlags(mask, (MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY, irqmask);
     }
     else
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
     }
 }
 
@@ -265,52 +270,54 @@ void MicroByteScheduler::sleep()
     if (microbyte_in_isr())
         return;
 
-    unsigned state = microbyte_disable_irq();
-    setThreadStatus(currentActiveThread, MICROBYTE_THREAD_STATUS_SLEEPING);
-    microbyte_restore_irq(state);
+    uint32_t irqmask = microbyte_disable_irq();
+    setThreadStatus((MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_SLEEPING);
+    microbyte_restore_irq(irqmask);
     microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::yield()
 {
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
+    MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
 
-    if (currentActiveThread->status >= MICROBYTE_THREAD_STATUS_RUNNING)
-        runQueue[currentActiveThread->priority].leftPopRightPush();
+    if (curThread->status >= MICROBYTE_THREAD_STATUS_RUNNING)
+        runQueue[curThread->priority].leftPopRightPush();
 
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     microbyte_trigger_context_switch();
 }
 
 void MicroByteScheduler::exit()
 {
-    (void)microbyte_disable_irq();
-    threadsContainer[currentActivePid] = NULL;
+    uint32_t irqmask = microbyte_disable_irq();
+    threadsContainer[sched_active_pid] = NULL;
     numOfThreadsInContainer -= 1;
-    setThreadStatus(currentActiveThread, MICROBYTE_THREAD_STATUS_STOPPED);
-    currentActiveThread = NULL;
+    setThreadStatus((MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_STOPPED);
+    sched_active_thread = NULL;
+    microbyte_restore_irq(irqmask);
     microbyte_trigger_context_switch();
 }
 
 int MicroByteScheduler::wakeUpThread(MicroBytePid pid)
 {
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     MicroByteThread *threadToWake = threadFromContainer(pid);
     if (!threadToWake)
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
         return -1; // MicroByteThread wasn't in container
     }
     else if (threadToWake->status == MICROBYTE_THREAD_STATUS_SLEEPING)
     {
         setThreadStatus(threadToWake, MICROBYTE_THREAD_STATUS_PENDING);
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
         contextSwitch(threadToWake->priority);
         return 1;
     }
     else
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
         return 0; // MicroByteThread wasn't sleep
     }
 }
@@ -318,7 +325,7 @@ int MicroByteScheduler::wakeUpThread(MicroBytePid pid)
 void MicroByteScheduler::run()
 {
     contextSwitchRequest = 0;
-    MicroByteThread *curThread = currentActiveThread;
+    MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
     MicroByteThread *nextThread = nextThreadFromRunQueue();
 
     if (curThread == nextThread)
@@ -331,59 +338,61 @@ void MicroByteScheduler::run()
     }
 
     nextThread->setStatus(MICROBYTE_THREAD_STATUS_RUNNING);
-    currentActiveThread = nextThread;
-    currentActivePid = nextThread->pid;
+    sched_active_thread = (void *)nextThread;
+    sched_active_pid = (int16_t)nextThread->pid;
 }
 
 void MicroByteScheduler::setThreadFlags(MicroByteThread *thread, uint16_t mask)
 {
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     thread->flags |= mask;
 
     if (wakeThreadFlags(thread))
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
 
         if (!microbyte_in_isr())
             microbyte_trigger_context_switch();
     }
     else
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
     }
 }
 
 uint16_t MicroByteScheduler::clearThreadFlags(uint16_t mask)
 {
-    return clearThreadFlagsAtomic(currentActiveThread, mask);
+    return clearThreadFlagsAtomic((MicroByteThread *)sched_active_thread, mask);
 }
 
 uint16_t MicroByteScheduler::waitAnyThreadFlags(uint16_t mask)
 {
     waitAnyThreadFlagsBlocked(mask);
-    return clearThreadFlagsAtomic(currentActiveThread, mask);
+    return clearThreadFlagsAtomic((MicroByteThread *)sched_active_thread, mask);
 }
 
 uint16_t MicroByteScheduler::waitAllThreadFlags(uint16_t mask)
 {
-    unsigned state = microbyte_disable_irq();
-    if (!((currentActiveThread->flags & mask) == mask))
+    uint32_t irqmask = microbyte_disable_irq();
+    MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
+    if (!((curThread->flags & mask) == mask))
     {
-        waitThreadFlags(mask, currentActiveThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ALL, state);
+        waitThreadFlags(mask, curThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ALL, irqmask);
     }
     else
     {
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
     }
-    return clearThreadFlagsAtomic(currentActiveThread, mask);
+    return clearThreadFlagsAtomic(curThread, mask);
 }
 
 uint16_t MicroByteScheduler::waitOneThreadFlags(uint16_t mask)
 {
     waitAnyThreadFlagsBlocked(mask);
-    uint16_t tmp = currentActiveThread->flags & mask;
+    MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
+    uint16_t tmp = curThread->flags & mask;
     tmp &= (~tmp + 1);
-    return clearThreadFlagsAtomic(currentActiveThread, tmp);
+    return clearThreadFlagsAtomic(curThread, tmp);
 }
 
 int MicroByteScheduler::wakeThreadFlags(MicroByteThread *thread)

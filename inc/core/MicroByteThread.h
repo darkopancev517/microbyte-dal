@@ -24,6 +24,11 @@
 #define MICROBYTE_THREAD_PID_LAST (MICROBYTE_THREAD_PID_FIRST + MICROBYTE_THREAD_MAX - 1)
 #define MICROBYTE_THREAD_PID_ISR (MICROBYTE_THREAD_PID_LAST - 1)
 
+extern "C" {
+extern void *sched_active_thread;
+extern int16_t sched_active_pid;
+}
+
 typedef int16_t MicroBytePid;
 
 typedef void *(*MicroByteThreadHandler)(void *arg);
@@ -106,9 +111,7 @@ class MicroByteThread
 class MicroByteScheduler
 {
     int numOfThreadsInContainer;
-    unsigned int contextSwitchRequest;
-    MicroByteThread *currentActiveThread;
-    MicroBytePid currentActivePid;
+    int contextSwitchRequest;
     uint32_t runQueueBitCache;
     MicroByteThread *threadsContainer[MICROBYTE_THREAD_PID_LAST + 1];
     CircList runQueue[MICROBYTE_THREAD_PRIO_LEVELS];
@@ -117,7 +120,7 @@ class MicroByteScheduler
     MicroByteThread *nextThreadFromRunQueue();
 
     uint16_t clearThreadFlagsAtomic(MicroByteThread *thread, uint16_t mask);
-    void waitThreadFlags(uint16_t mask, MicroByteThread *thread, MicroByteThreadStatus newStatus, unsigned state);
+    void waitThreadFlags(uint16_t mask, MicroByteThread *thread, MicroByteThreadStatus newStatus, uint32_t irqmask);
     void waitAnyThreadFlagsBlocked(uint16_t mask);
 
     public:
@@ -138,10 +141,6 @@ class MicroByteScheduler
     void addNumOfThreads() { numOfThreadsInContainer += 1; }
 
     int numOfThreads() { return numOfThreadsInContainer; }
-
-    MicroByteThread *activeThread() { return currentActiveThread; }
-
-    MicroBytePid activePid() { return currentActivePid; }
 
     int requestedContextSwitch() { return contextSwitchRequest; }
 

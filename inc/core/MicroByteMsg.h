@@ -9,7 +9,7 @@
 
 class MicroByteMsg
 {
-    int send(MicroBytePid targetPid, int blocking, unsigned state);
+    int send(MicroBytePid targetPid, int blocking, uint32_t irqmask);
     int receive(int blocking);
 
     public:

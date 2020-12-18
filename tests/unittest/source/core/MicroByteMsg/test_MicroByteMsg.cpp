@@ -25,8 +25,8 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     MicroByteMsg mainThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
     MicroByteMsg thread1MsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
@@ -91,8 +91,8 @@ TEST_F(TestMicroByteMsg, singleMsgTest)
     EXPECT_EQ(scheduler->threadFromContainer(mainThread->getPid()), mainThread);
     EXPECT_EQ(scheduler->threadFromContainer(thread1->getPid()), thread1);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
@@ -492,8 +492,8 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     MicroByteMsg idleThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
     MicroByteMsg mainThreadMsgQueue[MICROBYTE_MSG_QUEUE_SIZE];
@@ -561,8 +561,8 @@ TEST_F(TestMicroByteMsg, multipleMsgTest)
     EXPECT_EQ(scheduler->threadFromContainer(mainThread->getPid()), mainThread);
     EXPECT_EQ(scheduler->threadFromContainer(thread1->getPid()), thread1);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);

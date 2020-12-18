@@ -7,19 +7,19 @@
 static int testDeviceInIrqState = 0;
 static int testDeviceContextSwitchState = 0;
 
-unsigned microbyte_disable_irq()
+uint32_t microbyte_disable_irq()
 {
     return 0;
 }
 
-unsigned microbyte_enable_irq()
+uint32_t microbyte_enable_irq()
 {
     return 0;
 }
 
-void microbyte_restore_irq(unsigned state)
+void microbyte_restore_irq(uint32_t irqmask)
 {
-    (void)state;
+    (void)irqmask;
 }
 
 int microbyte_in_isr()

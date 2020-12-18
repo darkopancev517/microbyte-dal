@@ -76,7 +76,7 @@ int Cib::peek()
 
 int Cib::put()
 {
-    if (avail() <= static_cast<int>(mask))
+    if (avail() <= mask)
     {
         return static_cast<int>(writeCount++ & mask);
     }

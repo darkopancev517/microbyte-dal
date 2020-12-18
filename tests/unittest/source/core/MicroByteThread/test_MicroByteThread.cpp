@@ -24,8 +24,8 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     /**
      * -------------------------------------------------------------------------
@@ -53,15 +53,15 @@ TEST_F(TestMicroByteThread, basicThreadTest)
     EXPECT_EQ(scheduler->numOfThreads(), 1);
     EXPECT_EQ(scheduler->threadFromContainer(thread1->getPid()), thread1);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     scheduler->run();
 
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(scheduler->activeThread(), thread1);
-    EXPECT_EQ(scheduler->activePid(), thread1->getPid());
+    EXPECT_EQ(sched_active_thread, thread1);
+    EXPECT_EQ(sched_active_pid, thread1->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 1);
 
     /**
@@ -90,8 +90,8 @@ TEST_F(TestMicroByteThread, basicThreadTest)
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(thread2->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(scheduler->activeThread(), thread2);
-    EXPECT_EQ(scheduler->activePid(), thread2->getPid());
+    EXPECT_EQ(sched_active_thread, thread2);
+    EXPECT_EQ(sched_active_pid, thread2->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 2);
 
     // Exit current active thread
@@ -103,8 +103,8 @@ TEST_F(TestMicroByteThread, basicThreadTest)
 
     scheduler->run();
 
-    EXPECT_EQ(scheduler->activeThread(), thread1);
-    EXPECT_EQ(scheduler->activePid(), thread1->getPid());
+    EXPECT_EQ(sched_active_thread, thread1);
+    EXPECT_EQ(sched_active_pid, thread1->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 1);
 
     // Try to get removed thread from scheduler
@@ -120,8 +120,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     EXPECT_NE(scheduler, nullptr);
     EXPECT_EQ(scheduler->numOfThreads(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     /**
      * -------------------------------------------------------------------------
@@ -163,16 +163,16 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(scheduler->threadFromContainer(idleThread->getPid()), idleThread);
     EXPECT_EQ(scheduler->threadFromContainer(mainThread->getPid()), mainThread);
     EXPECT_EQ(scheduler->requestedContextSwitch(), 0);
-    EXPECT_EQ(scheduler->activeThread(), nullptr);
-    EXPECT_EQ(scheduler->activePid(), MICROBYTE_THREAD_PID_UNDEF);
+    EXPECT_EQ(sched_active_thread, nullptr);
+    EXPECT_EQ(sched_active_pid, MICROBYTE_THREAD_PID_UNDEF);
 
     scheduler->run();
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(scheduler->activeThread(), mainThread);
-    EXPECT_EQ(scheduler->activePid(), mainThread->getPid());
+    EXPECT_EQ(sched_active_thread, mainThread);
+    EXPECT_EQ(sched_active_pid, mainThread->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 2);
 
     // At this point "main" thread alread in running state as expected
@@ -189,14 +189,14 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
-    EXPECT_EQ(scheduler->activeThread(), mainThread);
+    EXPECT_EQ(sched_active_thread, mainThread);
 
     scheduler->run();
 
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
-    EXPECT_EQ(scheduler->activeThread(), idleThread);
-    EXPECT_EQ(scheduler->activePid(), idleThread->getPid());
+    EXPECT_EQ(sched_active_thread, idleThread);
+    EXPECT_EQ(sched_active_pid, idleThread->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 2);
 
     // At this point "idle" thread in running state as expected after "main"
@@ -236,8 +236,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(scheduler->activeThread(), thread1);
-    EXPECT_EQ(scheduler->activePid(), thread1->getPid());
+    EXPECT_EQ(sched_active_thread, thread1);
+    EXPECT_EQ(sched_active_pid, thread1->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 3);
 
     scheduler->yield();
@@ -392,8 +392,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_SLEEPING);
 
-    EXPECT_EQ(scheduler->activeThread(), idleThread);
-    EXPECT_EQ(scheduler->activePid(), idleThread->getPid());
+    EXPECT_EQ(sched_active_thread, idleThread);
+    EXPECT_EQ(sched_active_pid, idleThread->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 3);
 
     EXPECT_EQ(scheduler->wakeUpThread(mainThread->getPid()), 0);
@@ -471,8 +471,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RUNNING);
 
-    EXPECT_EQ(scheduler->activeThread(), thread1);
-    EXPECT_EQ(scheduler->activePid(), thread1->getPid());
+    EXPECT_EQ(sched_active_thread, thread1);
+    EXPECT_EQ(sched_active_pid, thread1->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 3);
 
     /**
@@ -499,8 +499,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_MUTEX_BLOCKED);
     EXPECT_EQ(thread1->getStatus(), MICROBYTE_THREAD_STATUS_RECEIVE_BLOCKED);
 
-    EXPECT_EQ(scheduler->activeThread(), idleThread);
-    EXPECT_EQ(scheduler->activePid(), idleThread->getPid());
+    EXPECT_EQ(sched_active_thread, idleThread);
+    EXPECT_EQ(sched_active_pid, idleThread->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 3);
 
     // At this point idle thread is run as expected, because other
@@ -566,8 +566,8 @@ TEST_F(TestMicroByteThread, multipleThreadTest)
 
     // At this point it succesfully switched to "thread1"
 
-    EXPECT_EQ(scheduler->activeThread(), thread1);
-    EXPECT_EQ(scheduler->activePid(), thread1->getPid());
+    EXPECT_EQ(sched_active_thread, thread1);
+    EXPECT_EQ(sched_active_pid, thread1->getPid());
     EXPECT_EQ(scheduler->numOfThreads(), 3);
 
     /**

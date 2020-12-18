@@ -18,12 +18,12 @@ void MicroByteEventQueue::post(MicroByteEvent *event, MicroByteThread *thread)
 
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
 
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
 
     if (!event->node.next)
         queue.rightPush(&event->node);
 
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     scheduler->setThreadFlags(thread, MICROBYTE_EVENT_THREAD_FLAG);
 }
 
@@ -32,17 +32,17 @@ void MicroByteEventQueue::cancel(MicroByteEvent *event)
     if (event == NULL)
         return;
 
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     queue.remove(&event->node);
     event->node.next = NULL;
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
 }
 
 MicroByteEvent *MicroByteEventQueue::get()
 {
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     MicroByteEvent *result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     if (result)
         result->node.next = NULL;
     return result;
@@ -53,17 +53,17 @@ MicroByteEvent *MicroByteEventQueue::wait()
     MicroByteEvent *result = NULL;
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
 #ifdef UNITTEST
-    unsigned state = microbyte_disable_irq();
+    uint32_t irqmask = microbyte_disable_irq();
     result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-    microbyte_restore_irq(state);
+    microbyte_restore_irq(irqmask);
     if (result == NULL)
         scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
 #else
     do
     {
-        unsigned state = microbyte_disable_irq();
+        uint32_t irqmask = microbyte_disable_irq();
         result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
-        microbyte_restore_irq(state);
+        microbyte_restore_irq(irqmask);
         if (result == NULL)
             scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
     } while (result == NULL);

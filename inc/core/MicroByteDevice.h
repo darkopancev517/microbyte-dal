@@ -6,15 +6,20 @@
 
 #include "MicroByteConfig.h"
 
+#define STACK_MARKER (0x77777777)
+#define STACK_CANARY_WORD (0xE7FEE7FEu)
+#define INITIAL_XPSR (0x01000000)
+#define EXCEPT_RET_TASK_MODE (0xfffffffd)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-unsigned microbyte_disable_irq();
+uint32_t microbyte_disable_irq();
 
-unsigned microbyte_enable_irq();
+uint32_t microbyte_enable_irq();
 
-void microbyte_restore_irq(unsigned state);
+void microbyte_restore_irq(uint32_t mask);
 
 int microbyte_in_isr();
 
