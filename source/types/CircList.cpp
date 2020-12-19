@@ -5,7 +5,7 @@
 
 CircList::CircList()
 {
-    next = NULL;
+    next = nullptr;
 }
 
 void CircList::rightPush(CircList *node)
@@ -45,7 +45,7 @@ CircList *CircList::leftPop()
 
         if (this->next == first)
         {
-            this->next = NULL;
+            this->next = nullptr;
         }
         else
         {
@@ -56,7 +56,7 @@ CircList *CircList::leftPop()
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -75,7 +75,7 @@ CircList *CircList::leftPeek()
         return this->next->next;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 CircList *CircList::rightPeek()
@@ -98,7 +98,7 @@ CircList *CircList::rightPop()
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -107,7 +107,7 @@ CircList *CircList::findBefore(const CircList *node)
     CircList *pos = this->next;
     if (!pos)
     {
-        return NULL;
+        return nullptr;
     }
 
     do
@@ -121,7 +121,7 @@ CircList *CircList::findBefore(const CircList *node)
 
     } while (pos != this->next);
 
-    return NULL;
+    return nullptr;
 }
 
 CircList *CircList::find(const CircList *node)
@@ -133,7 +133,7 @@ CircList *CircList::find(const CircList *node)
     }
     else
     {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -163,7 +163,7 @@ CircList *CircList::remove(CircList *node)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 size_t CircList::count()

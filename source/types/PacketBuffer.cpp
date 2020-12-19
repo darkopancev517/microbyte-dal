@@ -6,12 +6,12 @@ PacketBuffer PacketBuffer::EmptyPacket = PacketBuffer(1);
 
 PacketBuffer::PacketBuffer()
 {
-    this->init(NULL, 0, 0);
+    this->init(nullptr, 0, 0);
 }
 
 PacketBuffer::PacketBuffer(int length)
 {
-    this->init(NULL, length, 0);
+    this->init(nullptr, length, 0);
 }
 
 PacketBuffer::PacketBuffer(uint8_t *data, int length, int rssi)

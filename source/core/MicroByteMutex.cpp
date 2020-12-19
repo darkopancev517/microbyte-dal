@@ -14,7 +14,7 @@ int MicroByteMutex::setLock(int blocking)
 {
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
-    if (queue.next == NULL)
+    if (queue.next == nullptr)
     {
         queue.next = MICROBYTE_MUTEX_LOCKED;
         microbyte_restore_irq(irqmask);
@@ -27,7 +27,7 @@ int MicroByteMutex::setLock(int blocking)
         if (queue.next == MICROBYTE_MUTEX_LOCKED)
         {
             queue.next = &curThread->runQueueEntry;
-            queue.next->next = NULL;
+            queue.next->next = nullptr;
         }
         else
         {
@@ -47,7 +47,7 @@ int MicroByteMutex::setLock(int blocking)
 MicroBytePid MicroByteMutex::peek()
 {
     uint32_t irqmask = microbyte_disable_irq();
-    if (queue.next == NULL || queue.next == MICROBYTE_MUTEX_LOCKED)
+    if (queue.next == nullptr || queue.next == MICROBYTE_MUTEX_LOCKED)
     {
         microbyte_restore_irq(irqmask);
         return MICROBYTE_THREAD_PID_UNDEF;
@@ -61,14 +61,14 @@ void MicroByteMutex::unlock()
 {
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
-    if (queue.next == NULL)
+    if (queue.next == nullptr)
     {
         microbyte_restore_irq(irqmask);
         return;
     }
     if (queue.next == MICROBYTE_MUTEX_LOCKED)
     {
-        queue.next = NULL;
+        queue.next = nullptr;
         microbyte_restore_irq(irqmask);
         return;
     }
@@ -92,7 +92,7 @@ void MicroByteMutex::unlockAndSleep()
     {
         if (queue.next == MICROBYTE_MUTEX_LOCKED)
         {
-            queue.next = NULL;
+            queue.next = nullptr;
         }
         else
         {

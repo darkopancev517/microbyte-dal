@@ -4,7 +4,7 @@
 
 List::List()
 {
-    next = NULL;
+    next = nullptr;
 }
 
 void List::add(List *node)
@@ -17,7 +17,7 @@ List *List::removeHead()
 {
     List *head = this->next;
 
-    if (head != NULL)
+    if (head != nullptr)
     {
         this->next = head->next;
     }

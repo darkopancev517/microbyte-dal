@@ -7,7 +7,7 @@
 DEFINE_ALIGNED_VAR(uByteScheduler, sizeof(MicroByteScheduler), uint64_t);
 
 extern "C" {
-void *sched_active_thread = NULL;
+void *sched_active_thread = nullptr;
 int16_t sched_active_pid = MICROBYTE_THREAD_PID_UNDEF;
 }
 
@@ -15,7 +15,7 @@ MicroByteScheduler &MicroByteScheduler::init()
 {
     MicroByteScheduler *scheduler = &get();
     scheduler = new (&uByteScheduler) MicroByteScheduler();
-    sched_active_thread = NULL;
+    sched_active_thread = nullptr;
     sched_active_pid = MICROBYTE_THREAD_PID_UNDEF;
     return *scheduler;
 }
@@ -33,37 +33,42 @@ MicroByteScheduler::MicroByteScheduler()
 {
     for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i)
     {
-        this->threadsContainer[i] = NULL;
+        this->threadsContainer[i] = nullptr;
     }
     for (uint8_t prio = 0; prio < MICROBYTE_THREAD_PRIO_LEVELS; prio++)
     {
-        this->runQueue[prio].next = NULL;
+        this->runQueue[prio].next = nullptr;
     }
 }
 
 MicroByteThread::MicroByteThread()
-    : stackPointer(NULL)
+    : stackPointer(nullptr)
     , status(MICROBYTE_THREAD_STATUS_NOT_FOUND)
     , priority(MICROBYTE_THREAD_PRIORITY_IDLE)
     , pid(MICROBYTE_THREAD_PID_UNDEF)
     , runQueueEntry()
-    , stackStart(NULL)
-    , name(NULL)
+    , stackStart(nullptr)
+    , name(nullptr)
     , stackSize(0)
     , flags(0)
     , waitFlags(0)
-    , waitData(NULL)
+    , waitData(nullptr)
     , msgWaiters()
     , msgQueue()
-    , msgArray(NULL)
+    , msgArray(nullptr)
 {
 }
 
-MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio,
-        int flags, MicroByteThreadHandler func, void *arg, const char *name)
+MicroByteThread *MicroByteThread::init(char *stack,
+        int size,
+        MicroByteThreadHandler func,
+        const char *name,
+        uint8_t prio,
+        void *arg,
+        int flags)
 {
     if (prio >= MICROBYTE_THREAD_PRIO_LEVELS)
-        return NULL;
+        return nullptr;
 
     int totalStackSize = size;
 
@@ -84,7 +89,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio,
     size -= size % 8;
 
     if (size < 0)
-        return NULL;
+        return nullptr;
 
     MicroByteThread *thread = new (stack + size) MicroByteThread();
 
@@ -113,7 +118,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio,
 
     for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i)
     {
-        if (scheduler.threadFromContainer(i) == NULL)
+        if (scheduler.threadFromContainer(i) == nullptr)
         {
             pid = i;
             break;
@@ -123,7 +128,7 @@ MicroByteThread *MicroByteThread::init(char *stack, int size, uint8_t prio,
     if (pid == MICROBYTE_THREAD_PID_UNDEF)
     {
         microbyte_restore_irq(irqmask);
-        return NULL;
+        return nullptr;
     }
 
     scheduler.addThread(thread, pid);
@@ -177,7 +182,7 @@ void MicroByteScheduler::setThreadStatus(MicroByteThread *thread, MicroByteThrea
         {
             runQueue[priority].leftPop();
 
-            if (runQueue[priority].next == NULL)
+            if (runQueue[priority].next == nullptr)
                 runQueueBitCache &= ~(1 << priority);
         }
     }
@@ -291,10 +296,10 @@ void MicroByteScheduler::yield()
 void MicroByteScheduler::exit()
 {
     (void) microbyte_disable_irq();
-    threadsContainer[sched_active_pid] = NULL;
+    threadsContainer[sched_active_pid] = nullptr;
     numOfThreadsInContainer -= 1;
     setThreadStatus((MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_STOPPED);
-    sched_active_thread = NULL;
+    sched_active_thread = nullptr;
     microbyte_trigger_context_switch();
 }
 
@@ -330,7 +335,7 @@ void MicroByteScheduler::run()
     if (curThread == nextThread)
         return;
 
-    if (curThread != NULL)
+    if (curThread != nullptr)
     {
         if (curThread->status == MICROBYTE_THREAD_STATUS_RUNNING)
             curThread->setStatus(MICROBYTE_THREAD_STATUS_PENDING);
@@ -468,5 +473,5 @@ int MicroByteThread::numOfMsgInQueue()
 
 int MicroByteThread::hasMsgQueue()
 {
-    return msgArray != NULL;
+    return msgArray != nullptr;
 }

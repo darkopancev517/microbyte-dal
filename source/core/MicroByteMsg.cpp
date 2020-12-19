@@ -5,7 +5,7 @@ MicroByteMsg::MicroByteMsg()
     : senderPid(MICROBYTE_THREAD_PID_UNDEF)
     , type(0)
 {
-    this->content.ptr = NULL;
+    this->content.ptr = nullptr;
     this->content.value = 0;
 }
 
@@ -14,7 +14,7 @@ int MicroByteMsg::send(MicroBytePid targetPid, int blocking, uint32_t irqmask)
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(targetPid);
     senderPid = sched_active_pid;
-    if (targetThread == NULL || !targetThread->hasMsgQueue())
+    if (targetThread == nullptr || !targetThread->hasMsgQueue())
     {
         microbyte_restore_irq(irqmask);
         return -1;
@@ -69,7 +69,7 @@ int MicroByteMsg::receive(int blocking)
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
 
-    if (curThread == NULL || !curThread->hasMsgQueue())
+    if (curThread == nullptr || !curThread->hasMsgQueue())
     {
         microbyte_restore_irq(irqmask);
         return -1;
@@ -77,7 +77,7 @@ int MicroByteMsg::receive(int blocking)
 
     int queueIndex = -1;
 
-    if (curThread->msgArray != NULL)
+    if (curThread->msgArray != nullptr)
         queueIndex = curThread->msgQueue.get();
 
     if (!blocking && (!curThread->msgWaiters.next && queueIndex == -1))
@@ -96,7 +96,7 @@ int MicroByteMsg::receive(int blocking)
         curThread->waitData = static_cast<void *>(this);
     }
     List *next = curThread->msgWaiters.removeHead();
-    if (next == NULL)
+    if (next == nullptr)
     {
         if (queueIndex < 0)
         {
@@ -113,13 +113,13 @@ int MicroByteMsg::receive(int blocking)
     else
     {
         MicroByteThread *senderThread = MicroByteThread::get(reinterpret_cast<CircList *>(next));
-        MicroByteMsg *tmp = NULL;
+        MicroByteMsg *tmp = nullptr;
 
         if (queueIndex >= 0)
             tmp = &curThread->msgArray[curThread->msgQueue.put()];
 
         MicroByteMsg *senderMsg = static_cast<MicroByteMsg *>(senderThread->waitData);
-        if (tmp != NULL)
+        if (tmp != nullptr)
         {
             *tmp = *senderMsg;
             *this = *tmp;
@@ -131,7 +131,7 @@ int MicroByteMsg::receive(int blocking)
         uint8_t senderPrio = MICROBYTE_THREAD_PRIORITY_IDLE;
         if (senderThread->status != MICROBYTE_THREAD_STATUS_REPLY_BLOCKED)
         {
-            senderThread->waitData = NULL;
+            senderThread->waitData = nullptr;
             scheduler->setThreadStatus(senderThread, MICROBYTE_THREAD_STATUS_PENDING);
             senderPrio = senderThread->priority;
         }
@@ -171,7 +171,7 @@ int MicroByteMsg::sendToSelf(void)
 {
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
-    if (curThread == NULL || !curThread->hasMsgQueue())
+    if (curThread == nullptr || !curThread->hasMsgQueue())
     {
         microbyte_restore_irq(irqmask);
         return -1;
@@ -187,7 +187,7 @@ int MicroByteMsg::sendInIsr(MicroBytePid targetPid)
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(targetPid);
 
-    if (targetThread == NULL || !targetThread->hasMsgQueue())
+    if (targetThread == nullptr || !targetThread->hasMsgQueue())
         return -1;
 
     senderPid = MICROBYTE_THREAD_PID_ISR;
@@ -242,7 +242,7 @@ int MicroByteMsg::reply(MicroByteMsg *reply)
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(senderPid);
-    if (targetThread == NULL ||
+    if (targetThread == nullptr ||
         !targetThread->hasMsgQueue() ||
         targetThread->status != MICROBYTE_THREAD_STATUS_REPLY_BLOCKED)
     {
@@ -261,7 +261,7 @@ int MicroByteMsg::replyInIsr(MicroByteMsg *reply)
 {
     MicroByteScheduler *scheduler = &MicroByteScheduler::get();
     MicroByteThread *targetThread = scheduler->threadFromContainer(senderPid);
-    if (targetThread == NULL ||
+    if (targetThread == nullptr ||
         !targetThread->hasMsgQueue() ||
         targetThread->status != MICROBYTE_THREAD_STATUS_REPLY_BLOCKED)
     {

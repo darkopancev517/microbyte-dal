@@ -29,11 +29,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char idleStack[128];
 
-    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack),
-                                      MICROBYTE_THREAD_PRIORITY_IDLE,
-                                      MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
-                                      MICROBYTE_THREAD_FLAGS_STACKMARKER,
-                                      NULL, NULL, "idle");
+    MicroByteThread *idleThread = MicroByteThread::init(idleStack, sizeof(idleStack), nullptr, "idle", MICROBYTE_THREAD_PRIORITY_IDLE);
 
     EXPECT_NE(idleThread, nullptr);
     EXPECT_EQ(idleThread->getPid(), 1);
@@ -43,11 +39,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char mainStack[128];
 
-    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack),
-                                      MICROBYTE_THREAD_PRIORITY_MAIN,
-                                      MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
-                                      MICROBYTE_THREAD_FLAGS_STACKMARKER,
-                                      NULL, NULL, "main");
+    MicroByteThread *mainThread = MicroByteThread::init(mainStack, sizeof(mainStack), nullptr, "main");
 
     EXPECT_NE(mainThread, nullptr);
     EXPECT_EQ(mainThread->getPid(), 2);
@@ -57,11 +49,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char stack1[128];
 
-    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1),
-                                   MICROBYTE_THREAD_PRIORITY_MAIN - 1,
-                                   MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
-                                   MICROBYTE_THREAD_FLAGS_STACKMARKER,
-                                   NULL, NULL, "thread1");
+    MicroByteThread *thread1 = MicroByteThread::init(stack1, sizeof(stack1), nullptr, "thread1", MICROBYTE_THREAD_PRIORITY_MAIN - 1);
 
     EXPECT_NE(thread1, nullptr);
     EXPECT_EQ(thread1->getPid(), 3);
@@ -71,11 +59,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
 
     char stack2[128];
 
-    MicroByteThread *thread2 = MicroByteThread::init(stack2, sizeof(stack2),
-                                   MICROBYTE_THREAD_PRIORITY_MAIN - 1,
-                                   MICROBYTE_THREAD_FLAGS_WOUT_YIELD |
-                                   MICROBYTE_THREAD_FLAGS_STACKMARKER,
-                                   NULL, NULL, "thread2");
+    MicroByteThread *thread2 = MicroByteThread::init(stack2, sizeof(stack2), nullptr, "thread2", MICROBYTE_THREAD_PRIORITY_MAIN - 1);
 
     EXPECT_NE(thread2, nullptr);
     EXPECT_EQ(thread2->getPid(), 4);
@@ -120,7 +104,7 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
      **/
 
 
-    MicroByteMutex mutex = MicroByteMutex();
+    MicroByteMutex mutex = MicroByteMutex(MICROBYTE_MUTEX_INIT_UNLOCKED);
 
     mutex.lock();
 
@@ -227,9 +211,9 @@ TEST_F(TestMicroByteMutex, mutexFunctionsTest)
      * -------------------------------------------------------------------------
      **/
 
-    MicroByteMutex mutex1 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
-    MicroByteMutex mutex2 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
-    MicroByteMutex mutex3 = MicroByteMutex(MICROBYTE_MUTEX_LOCKED);
+    MicroByteMutex mutex1 = MicroByteMutex();
+    MicroByteMutex mutex2 = MicroByteMutex();
+    MicroByteMutex mutex3 = MicroByteMutex();
 
     EXPECT_EQ(idleThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
     EXPECT_EQ(mainThread->getStatus(), MICROBYTE_THREAD_STATUS_PENDING);
