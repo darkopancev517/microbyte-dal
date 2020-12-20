@@ -96,7 +96,10 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
     size -= size % 8;
 
     if (size < 0)
+    {
+        free((void *)stackMalloc);
         return nullptr;
+    }
 
     MicroByteThread *thread = new (stack + size) MicroByteThread();
 
@@ -135,6 +138,7 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
     if (pid == MICROBYTE_THREAD_PID_UNDEF)
     {
         microbyte_restore_irq(irqmask);
+        free((void *)stackMalloc);
         return nullptr;
     }
 
