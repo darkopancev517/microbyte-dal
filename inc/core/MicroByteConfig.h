@@ -23,6 +23,10 @@
 #define MICROBYTE_THREAD_MAX (32)
 #endif
 
+#ifndef MICROBYTE_THREAD_DEFAULT_STACK_SIZE
+#define MICROBYTE_THREAD_DEFAULT_STACK_SIZE 0x400
+#endif
+
 #ifndef MICROBYTE_MSG_QUEUE_SIZE
 #define MICROBYTE_MSG_QUEUE_SIZE (4)
 #endif
@@ -30,8 +34,6 @@
 #define CONFIG_ENABLED(X) (X == 1)
 #define CONFIG_DISABLED(X) (X != 1)
 
-#if CONFIG_ENABLED(MICROBYTE_HEAP_ALLOCATOR)
 #include "MicroByteHeapAllocator.h"
-#endif
 
 #endif

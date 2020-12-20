@@ -50,6 +50,7 @@ MicroByteThread::MicroByteThread()
     , stackStart(nullptr)
     , name(nullptr)
     , stackSize(0)
+    , allocatedStack(nullptr)
     , flags(0)
     , waitFlags(0)
     , waitData(nullptr)
@@ -59,11 +60,10 @@ MicroByteThread::MicroByteThread()
 {
 }
 
-MicroByteThread *MicroByteThread::init(char *stack,
-        int size,
-        MicroByteThreadHandler func,
+MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
         const char *name,
         uint8_t prio,
+        int size,
         void *arg,
         int flags)
 {
@@ -71,6 +71,13 @@ MicroByteThread *MicroByteThread::init(char *stack,
         return nullptr;
 
     int totalStackSize = size;
+
+    char *stack = (char *)malloc(totalStackSize);
+
+    if (stack == nullptr)
+        return nullptr;
+
+    char *stackMalloc = stack;
 
     // Aligned the stack on 16/32 bit boundary
     uintptr_t misalignment = reinterpret_cast<uintptr_t>(stack) % 8;
@@ -133,13 +140,14 @@ MicroByteThread *MicroByteThread::init(char *stack,
 
     scheduler.addThread(thread, pid);
 
-    thread->pid = pid;
     thread->stackPointer = microbyte_stack_init(func, arg, stack, size);
-    thread->stackStart = stack;
-    thread->stackSize = totalStackSize;
-    thread->name = name;
-    thread->priority = prio;
     thread->status = MICROBYTE_THREAD_STATUS_STOPPED;
+    thread->priority = prio;
+    thread->pid = pid;
+    thread->stackStart = stack;
+    thread->name = name;
+    thread->stackSize = totalStackSize;
+    thread->allocatedStack = stackMalloc;
 
     scheduler.addNumOfThreads();
 
@@ -299,6 +307,7 @@ void MicroByteScheduler::exit()
     threadsContainer[sched_active_pid] = nullptr;
     numOfThreadsInContainer -= 1;
     setThreadStatus((MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_STOPPED);
+    free((void *)(((MicroByteThread *)sched_active_thread)->allocatedStack));
     sched_active_thread = nullptr;
     microbyte_trigger_context_switch();
 }

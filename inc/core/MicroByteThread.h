@@ -69,6 +69,7 @@ class MicroByteThread
     char *stackStart;
     const char *name;
     int stackSize;
+    char *allocatedStack;
 
     uint16_t flags;
     uint16_t waitFlags;
@@ -82,11 +83,10 @@ class MicroByteThread
 
     MicroByteThread();
 
-    static MicroByteThread *init(char *stack,
-            int size,
-            MicroByteThreadHandler func,
+    static MicroByteThread *init(MicroByteThreadHandler func,
             const char *name,
             uint8_t prio = MICROBYTE_THREAD_PRIORITY_MAIN,
+            int size = MICROBYTE_THREAD_DEFAULT_STACK_SIZE,
             void *arg = nullptr,
             int flags = MICROBYTE_THREAD_FLAGS_WOUT_YIELD | MICROBYTE_THREAD_FLAGS_STACKMARKER);
 
