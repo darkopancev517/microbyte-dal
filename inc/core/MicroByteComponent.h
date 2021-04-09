@@ -26,7 +26,7 @@ class MicroByteComponent
     {
     }
 
-    virtual void ~MicroByteComponent()
+    virtual ~MicroByteComponent()
     {
     }
 };

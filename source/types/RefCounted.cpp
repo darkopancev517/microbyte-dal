@@ -16,7 +16,9 @@ static inline bool isReadOnlyInline(RefCounted *t)
         return true;
 
     if (refCount == 1 || (refCount & 1) == 0)
-        microbyte_panic(MICROBYTE_HEAP_ERROR);
+    {
+        // TODO microbyte_panic(MICROBYTE_HEAP_ERROR);
+    }
 
     return false;
 }

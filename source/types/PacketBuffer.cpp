@@ -108,7 +108,7 @@ int PacketBuffer::length()
 
 int PacketBuffer::getRSSI()
 {
-    return->ptr->rssi;
+    return ptr->rssi;
 }
 
 void PacketBuffer::setRSSI(uint8_t rssi)
