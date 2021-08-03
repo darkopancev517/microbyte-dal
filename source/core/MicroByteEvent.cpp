@@ -59,8 +59,7 @@ MicroByteEvent *MicroByteEventQueue::wait()
     if (result == nullptr)
         scheduler->waitAnyThreadFlags(MICROBYTE_EVENT_THREAD_FLAG);
 #else
-    do
-    {
+    do {
         uint32_t irqmask = microbyte_disable_irq();
         result = reinterpret_cast<MicroByteEvent *>(queue.leftPop());
         microbyte_restore_irq(irqmask);
@@ -74,13 +73,10 @@ MicroByteEvent *MicroByteEventQueue::wait()
 int MicroByteEventQueue::release(MicroByteEvent *event)
 {
     // Before releasing the event, make sure it's no longer in the event queue
-    if (queue.find(reinterpret_cast<CircList *>(event)) == nullptr)
-    {
+    if (queue.find(reinterpret_cast<CircList *>(event)) == nullptr) {
         event->node.next = nullptr;
         return 1;
-    }
-    else
-    {
+    } else {
         return -1;
     }
 }

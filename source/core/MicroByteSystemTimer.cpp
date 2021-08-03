@@ -13,8 +13,7 @@ int system_timer_init(int period)
     if (ticker == nullptr)
         ticker = new Ticker();
 
-    if (timer == nullptr)
-    {
+    if (timer == nullptr) {
         timer = new Timer();
         timer->start();
     }
@@ -64,10 +63,10 @@ uint64_t system_timer_current_time_us()
 void system_timer_tick()
 {
     update_time();
-
-    for (int i = 0; i < MICROBYTE_SYSTEM_COMPONENTS; i++)
+    for (int i = 0; i < MICROBYTE_SYSTEM_COMPONENTS; i++) {
         if (systemTickComponents[i] != nullptr)
             systemTickComponents[i]->systemTick();
+    }
 }
 
 int system_timer_add_component(MicroByteComponent *component)
@@ -77,8 +76,9 @@ int system_timer_add_component(MicroByteComponent *component)
     if (timer == nullptr || ticker == nullptr)
         system_timer_init(MICROBYTE_SYSTEM_TICK_PERIOD_MS);
 
-    while (systemTickComponents[i] != nullptr && i < MICROBYTE_SYSTEM_COMPONENTS)
+    while (systemTickComponents[i] != nullptr && i < MICROBYTE_SYSTEM_COMPONENTS) {
         i++;
+    }
 
     if (i == MICROBYTE_SYSTEM_COMPONENTS)
         return MICROBYTE_NO_RESOURCES;
@@ -91,8 +91,9 @@ int system_timer_remove_component(MicroByteComponent *component)
 {
     int i = 0;
 
-    while (systemTickComponents[i] != component && i < MICROBYTE_SYSTEM_COMPONENTS)
+    while (systemTickComponents[i] != component && i < MICROBYTE_SYSTEM_COMPONENTS) {
         i++;
+    }
 
     if (i == MICROBYTE_SYSTEM_COMPONENTS)
         return MICROBYTE_INVALID_PARAMETER;

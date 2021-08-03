@@ -31,12 +31,10 @@ MicroByteScheduler::MicroByteScheduler()
     , contextSwitchRequest(0)
     , runQueueBitCache(0)
 {
-    for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i)
-    {
+    for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i) {
         this->threadsContainer[i] = nullptr;
     }
-    for (uint8_t prio = 0; prio < MICROBYTE_THREAD_PRIO_LEVELS; prio++)
-    {
+    for (uint8_t prio = 0; prio < MICROBYTE_THREAD_PRIO_LEVELS; prio++) {
         this->runQueue[prio].next = nullptr;
     }
 }
@@ -82,8 +80,7 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
     // Aligned the stack on 16/32 bit boundary
     uintptr_t misalignment = reinterpret_cast<uintptr_t>(stack) % 8;
 
-    if (misalignment)
-    {
+    if (misalignment) {
         misalignment = 8 - misalignment;
         stack += misalignment;
         size -= misalignment;
@@ -95,27 +92,22 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
     // Round down the stacksize to multiple of MicroByteThread aligments (usually 16/32 bit)
     size -= size % 8;
 
-    if (size < 0)
-    {
+    if (size < 0) {
         free((void *)stackMalloc);
         return nullptr;
     }
 
     MicroByteThread *thread = new (stack + size) MicroByteThread();
 
-    if (flags & MICROBYTE_THREAD_FLAGS_STACKMARKER)
-    {
+    if (flags & MICROBYTE_THREAD_FLAGS_STACKMARKER) {
         // Assign each int of the stack the value of it's address, for test purposes
         uintptr_t *stackmax = reinterpret_cast<uintptr_t *>(stack + size);
         uintptr_t *stackp = reinterpret_cast<uintptr_t *>(stack);
-        while (stackp < stackmax)
-        {
+        while (stackp < stackmax) {
             *stackp = reinterpret_cast<uintptr_t>(stackp);
             stackp++;
         }
-    }
-    else
-    {
+    } else {
         // Create stack guard
         *(uintptr_t *)stack = reinterpret_cast<uintptr_t>(stack);
     }
@@ -126,17 +118,14 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
 
     MicroByteScheduler &scheduler = MicroByteScheduler::get();
 
-    for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i)
-    {
-        if (scheduler.threadFromContainer(i) == nullptr)
-        {
+    for (MicroBytePid i = MICROBYTE_THREAD_PID_FIRST; i <= MICROBYTE_THREAD_PID_LAST; ++i) {
+        if (scheduler.threadFromContainer(i) == nullptr) {
             pid = i;
             break;
         }
     }
 
-    if (pid == MICROBYTE_THREAD_PID_UNDEF)
-    {
+    if (pid == MICROBYTE_THREAD_PID_UNDEF) {
         microbyte_restore_irq(irqmask);
         free((void *)stackMalloc);
         return nullptr;
@@ -155,16 +144,11 @@ MicroByteThread *MicroByteThread::init(MicroByteThreadHandler func,
 
     scheduler.addNumOfThreads();
 
-    if (flags & MICROBYTE_THREAD_FLAGS_SLEEP)
-    {
+    if (flags & MICROBYTE_THREAD_FLAGS_SLEEP) {
         scheduler.setThreadStatus(thread, MICROBYTE_THREAD_STATUS_SLEEPING);
-    }
-    else
-    {
+    } else {
         scheduler.setThreadStatus(thread, MICROBYTE_THREAD_STATUS_PENDING);
-
-        if (!(flags & MICROBYTE_THREAD_FLAGS_WOUT_YIELD))
-        {
+        if (!(flags & MICROBYTE_THREAD_FLAGS_WOUT_YIELD)) {
             microbyte_restore_irq(irqmask);
             scheduler.contextSwitch(prio);
             return thread;
@@ -180,20 +164,14 @@ void MicroByteScheduler::setThreadStatus(MicroByteThread *thread, MicroByteThrea
 {
     uint8_t priority = thread->priority;
 
-    if (newStatus >= MICROBYTE_THREAD_STATUS_RUNNING)
-    {
-        if (thread->status < MICROBYTE_THREAD_STATUS_RUNNING)
-        {
+    if (newStatus >= MICROBYTE_THREAD_STATUS_RUNNING) {
+        if (thread->status < MICROBYTE_THREAD_STATUS_RUNNING) {
             runQueue[priority].rightPush(&thread->runQueueEntry);
             runQueueBitCache |= 1 << priority;
         }
-    }
-    else
-    {
-        if (thread->status >= MICROBYTE_THREAD_STATUS_RUNNING)
-        {
+    } else {
+        if (thread->status >= MICROBYTE_THREAD_STATUS_RUNNING) {
             runQueue[priority].leftPop();
-
             if (runQueue[priority].next == nullptr)
                 runQueueBitCache &= ~(1 << priority);
         }
@@ -208,14 +186,10 @@ void MicroByteScheduler::contextSwitch(uint8_t priority)
     uint8_t curPriority = curThread->getPriority();
     int isInRunQueue = (curThread->getStatus() >= MICROBYTE_THREAD_STATUS_RUNNING);
     // The lowest priority number is the highest priority thread
-    if (!isInRunQueue || (curPriority > priority))
-    {
-        if (microbyte_in_isr())
-        {
+    if (!isInRunQueue || (curPriority > priority)) {
+        if (microbyte_in_isr()) {
             contextSwitchRequest = 1;
-        }
-        else
-        {
+        } else {
             microbyte_trigger_context_switch();
         }
     }
@@ -272,12 +246,9 @@ void MicroByteScheduler::waitThreadFlags(uint16_t mask, MicroByteThread *thread,
 void MicroByteScheduler::waitAnyThreadFlagsBlocked(uint16_t mask)
 {
     uint32_t irqmask = microbyte_disable_irq();
-    if (!(((MicroByteThread *)sched_active_thread)->flags & mask))
-    {
+    if (!(((MicroByteThread *)sched_active_thread)->flags & mask)) {
         waitThreadFlags(mask, (MicroByteThread *)sched_active_thread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY, irqmask);
-    }
-    else
-    {
+    } else {
         microbyte_restore_irq(irqmask);
     }
 }
@@ -320,20 +291,15 @@ int MicroByteScheduler::wakeUpThread(MicroBytePid pid)
 {
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteThread *threadToWake = threadFromContainer(pid);
-    if (!threadToWake)
-    {
+    if (!threadToWake) {
         microbyte_restore_irq(irqmask);
         return -1; // MicroByteThread wasn't in container
-    }
-    else if (threadToWake->status == MICROBYTE_THREAD_STATUS_SLEEPING)
-    {
+    } else if (threadToWake->status == MICROBYTE_THREAD_STATUS_SLEEPING) {
         setThreadStatus(threadToWake, MICROBYTE_THREAD_STATUS_PENDING);
         microbyte_restore_irq(irqmask);
         contextSwitch(threadToWake->priority);
         return 1;
-    }
-    else
-    {
+    } else {
         microbyte_restore_irq(irqmask);
         return 0; // MicroByteThread wasn't sleep
     }
@@ -348,8 +314,7 @@ void MicroByteScheduler::run()
     if (curThread == nextThread)
         return;
 
-    if (curThread != nullptr)
-    {
+    if (curThread != nullptr) {
         if (curThread->status == MICROBYTE_THREAD_STATUS_RUNNING)
             curThread->setStatus(MICROBYTE_THREAD_STATUS_PENDING);
     }
@@ -364,15 +329,11 @@ void MicroByteScheduler::setThreadFlags(MicroByteThread *thread, uint16_t mask)
     uint32_t irqmask = microbyte_disable_irq();
     thread->flags |= mask;
 
-    if (wakeThreadFlags(thread))
-    {
+    if (wakeThreadFlags(thread)) {
         microbyte_restore_irq(irqmask);
-
         if (!microbyte_in_isr())
             microbyte_trigger_context_switch();
-    }
-    else
-    {
+    } else {
         microbyte_restore_irq(irqmask);
     }
 }
@@ -392,12 +353,9 @@ uint16_t MicroByteScheduler::waitAllThreadFlags(uint16_t mask)
 {
     uint32_t irqmask = microbyte_disable_irq();
     MicroByteThread *curThread = (MicroByteThread *)sched_active_thread;
-    if (!((curThread->flags & mask) == mask))
-    {
+    if (!((curThread->flags & mask) == mask)) {
         waitThreadFlags(mask, curThread, MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ALL, irqmask);
-    }
-    else
-    {
+    } else {
         microbyte_restore_irq(irqmask);
     }
     return clearThreadFlagsAtomic(curThread, mask);
@@ -416,8 +374,7 @@ int MicroByteScheduler::wakeThreadFlags(MicroByteThread *thread)
 {
     unsigned wakeup;
     uint16_t mask = thread->waitFlags;
-    switch (thread->status)
-    {
+    switch (thread->status) {
     case MICROBYTE_THREAD_STATUS_FLAG_BLOCKED_ANY:
         wakeup = (thread->flags & mask);
         break;
@@ -428,8 +385,7 @@ int MicroByteScheduler::wakeThreadFlags(MicroByteThread *thread)
         wakeup = 0;
         break;
     }
-    if (wakeup)
-    {
+    if (wakeup) {
         setThreadStatus(thread, MICROBYTE_THREAD_STATUS_PENDING);
         requestContextSwitch();
     }
@@ -438,11 +394,9 @@ int MicroByteScheduler::wakeThreadFlags(MicroByteThread *thread)
 
 void MicroByteThread::addTo(CircList *queue)
 {
-    while (queue->next)
-    {
+    while (queue->next) {
         MicroByteThread *queuedThread = containerOf(queue->next, &MicroByteThread::runQueueEntry);
-        if (queuedThread->priority > this->priority)
-        {
+        if (queuedThread->priority > this->priority) {
             break;
         }
         queue = queue->next;

@@ -24,12 +24,10 @@ void ManagedString::initString(const char *str)
 
 ManagedString::ManagedString(StringData *p)
 {
-    if (p == nullptr)
-    {
+    if (p == nullptr) {
         initEmpty();
         return;
     }
-
     ptr = p;
     ptr->incr();
 }
@@ -44,7 +42,6 @@ StringData* ManagedString::leakData()
 ManagedString::ManagedString(const int value)
 {
     char str[12];
-
     itoa(value, str);
     initString(str);
 }
@@ -58,12 +55,10 @@ ManagedString::ManagedString(const char value)
 ManagedString::ManagedString(const char *str)
 {
     // Sanity check. Return EmptyString for anything distasteful
-    if (str == NULL || *str == 0)
-    {
+    if (str == NULL || *str == 0) {
         initEmpty();
         return;
     }
-
     initString(str);
 }
 
@@ -71,12 +66,10 @@ ManagedString::ManagedString(const ManagedString &s1, const ManagedString &s2)
 {
     // Calculate length of new string.
     int len = s1.length() + s2.length();
-
     // Create a new buffer for holding the new string data.
     ptr = (StringData*) malloc(4+len+1);
     ptr->init();
     ptr->len = len;
-
     // Enter the data, and terminate the string.
     memcpy(ptr->data, s1.toCharArray(), s1.length());
     memcpy(ptr->data + s1.length(), s2.toCharArray(), s2.length());
@@ -89,7 +82,6 @@ ManagedString::ManagedString(PacketBuffer buffer)
         initEmpty();
         return;
     }
-
     // Allocate a new buffer ( just in case the data is not NULL terminated).
     ptr = (StringData*) malloc(4+buffer.length()+1);
     ptr->init();
@@ -103,13 +95,10 @@ ManagedString::ManagedString(PacketBuffer buffer)
 ManagedString::ManagedString(const char *str, const int16_t length)
 {
     // Sanity check. Return EmptyString for anything distasteful
-    if (str == NULL || *str == 0 || length == 0 || (uint16_t)length > strlen(str)) // XXX length should be unsigned on the interface
-    {
+    if (str == NULL || *str == 0 || length == 0 || (uint16_t)length > strlen(str)) {
         initEmpty();
         return;
     }
-
-
     // Allocate a new buffer, and create a NULL terminated string.
     ptr = (StringData*) malloc(4+length+1);
     ptr->init();

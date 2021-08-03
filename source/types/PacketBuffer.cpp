@@ -69,31 +69,30 @@ uint8_t& PacketBuffer::operator [] (int i)
 
 bool PacketBuffer::operator== (const PacketBuffer& p)
 {
-    if (ptr == p.ptr)
+    if (ptr == p.ptr) {
         return true;
-    else
+    } else {
         return (ptr->length == p.ptr->length && (memcpy(ptr->payload, p.ptr->payload, ptr->length)==0));
+    }
 }
 
 int PacketBuffer::setByte(int position, uint8_t value)
 {
-    if (position < ptr->length)
-    {
+    if (position < ptr->length) {
         ptr->payload[position] = value;
         return MICROBYTE_OK;
-    }
-    else
-    {
+    } else {
         return MICROBYTE_INVALID_PARAMETER;
     }
 }
 
 int PacketBuffer::getByte(int position)
 {
-    if (position < ptr->length)
+    if (position < ptr->length) {
         return ptr->payload[position];
-    else
+    } else {
         return MICROBYTE_INVALID_PARAMETER;
+    }
 }
 
 uint8_t *PacketBuffer::getBytes()

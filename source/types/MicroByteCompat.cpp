@@ -13,8 +13,7 @@ int string_reverse(char *s)
 
     j = s + strlen(s) - 1;
 
-    while(s < j)
-    {
+    while(s < j) {
         c = *s;
         *s++ = *j;
         *j-- = c;

@@ -12,10 +12,6 @@ Cib::Cib()
 
 void Cib::reset(unsigned int size)
 {
-    if ((size & (size - 1)))
-    {
-        while (1);
-    }
     readCount = 0;
     writeCount = 0;
     mask = size - 1;
@@ -58,8 +54,7 @@ int Cib::full()
 
 int Cib::get()
 {
-    if (avail())
-    {
+    if (avail()) {
         return static_cast<int>(readCount++ & mask);
     }
     return -1;
@@ -67,8 +62,7 @@ int Cib::get()
 
 int Cib::peek()
 {
-    if (avail())
-    {
+    if (avail()) {
         return static_cast<int>(readCount & mask);
     }
     return -1;
@@ -76,8 +70,7 @@ int Cib::peek()
 
 int Cib::put()
 {
-    if (avail() <= mask)
-    {
+    if (avail() <= mask) {
         return static_cast<int>(writeCount++ & mask);
     }
     return -1;

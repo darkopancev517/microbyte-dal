@@ -15,8 +15,7 @@ static inline bool isReadOnlyInline(RefCounted *t)
     if (refCount == 0xffff)
         return true;
 
-    if (refCount == 1 || (refCount & 1) == 0)
-    {
+    if (refCount == 1 || (refCount & 1) == 0) {
         // TODO microbyte_panic(MICROBYTE_HEAP_ERROR);
     }
 
@@ -30,8 +29,9 @@ bool RefCounted::isReadOnly()
 
 void RefCounted::incr()
 {
-    if (!isReadOnlyInline(this))
+    if (!isReadOnlyInline(this)) {
         refCount += 2;
+    }
 }
 
 void RefCounted::decr()
